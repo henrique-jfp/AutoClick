@@ -1,79 +1,84 @@
-# ⚡ Auto Clicker Pro & Key Presser
+<div align="center">
+  <img src="app_icon.png" alt="Auto Clicker Pro Logo" width="128"/>
+  <h1>Auto Clicker Pro & Key Presser ⚡</h1>
+  <p><strong>A automação de mouses e teclados mais avançada e premium, construída em Python.</strong></p>
+  
+  [![Release](https://img.shields.io/github/v/release/henrique-jfp/AutoClick?color=3ECF8E&style=for-the-badge)](https://github.com/henrique-jfp/AutoClick/releases)
+  [![Python](https://img.shields.io/badge/Python-3.12-5B8CFF?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
+</div>
 
-Um utilitário moderno, completo e de alta performance para automação de teclas do teclado e cliques do mouse no Windows, projetado para jogos e produtividade.
+<br/>
+
+O **Auto Clicker Pro** não é só mais um clicador genérico. Ele foi desenhado do zero para ter uma interface moderna (Dark Premium) e um poder de customização robusto. Funciona para automatizar farm em jogos (Genshin Impact, Minecraft, Roblox) e para realizar tarefas repetitivas de escritório (preencher formulários, lidar com planilhas, manter a tela ativa).
+
+---
+
+## 🎮 Para que serve?
+
+### 1. Automação para Jogos (Gaming)
+- **Modo Spam (Repetição):** Precisa atirar rápido ou pular freneticamente? O modo Spam clica milhares de vezes por segundo na posição que você escolher.
+- **Modo Hold (Segurar):** Para jogos onde você precisa segurar uma tecla por minutos (como correr ou minerar).
+- **Construtor de Macros:** Você pode criar um perfil complexo de *Stamina Loop* para jogos como Genshin Impact (ex: `Segura W` -> `Dá 7 Dashs` -> `Espera 6s` -> `Repete`).
+
+### 2. Produtividade & Trabalho
+- **Clique Dinâmico:** Automatize a navegação em sistemas lentos, clicando nas coordenadas X e Y exatas nos momentos corretos.
+- **Anti-AFK (Away From Keyboard):** Precisa ir pegar um café e não quer que o Microsoft Teams ou o jogo desconecte? Crie um macro para mexer o mouse e apertar `Scroll` de vez em quando.
+- **Modo Humano (Jitter):** Se o software que você usa tem detecção de bots, ative o "Modo Humano", que insere micro-atrasos aleatórios (em milissegundos) entre cada ação, imitando o comportamento humano real.
 
 ---
 
 ## ✨ Principais Funcionalidades
 
-### 1. 🔤 Sequência de Teclas Exatas / Macros (NOVO!)
-- **Combos e Sequências Ilimitadas:** Além de uma única tecla ou clique do mouse, agora você pode definir **sequências exatas de teclas** de qualquer tamanho!
-- **Como configurar:** Clique no novo botão **`🔤 Sequência (Macro)`** na Seção 1 e digite as teclas separadas por vírgula ou espaço (ex: `F, F, ESPAÇO` ou `1, 2, 3, 4` ou `E, Q, F`).
-- Ao ativar, o aplicativo dispara a sequência completa de teclas em ordem com o tempo/jitter configurado.
-- Você pode salvar qualquer sequência como um **Botão Rápido** em qualquer jogo!
-
-### 2. 🖥️ Modo Barrinha Flutuante (Mini Overlay sem Alt+Tab)
-- **Troca de Presets em Tempo Real no Jogo:** Clique no botão **`🖥️ BARRINHA FLUTUANTE`** no topo da tela para transformar a interface em uma barra horizontal pequena e flutuante.
-- **Sempre no Topo da Tela:** A barrinha fica fixada por cima do Genshin Impact ou de qualquer outro jogo em tela cheia / janela sem bordas.
-- **Botões Rápidos do Jogo Atual:** Exibe apenas os botões de presets do jogo ativo (ex: `[ ⚔️ Diálogo ]`, `[ 🏹 Ataque ]`, `[ 📜 Combo F,F,Espaço ]`) + botão de ligar/desligar `[ 🔴 PARADO (F6) ]`.
-- **Arrastável:** Clique e segure no ícone `⣿` para mover a barrinha para qualquer canto da sua tela!
-
-### 3. 🎮 Perfis por Jogo & Botões Rápidos Dinâmicos
-- **Abas de Jogos:** Alterne facilmente entre os perfis de cada jogo pelas abas principais (ex: `[ 🎮 Genshin Impact ]`, `[ ⛏️ Minecraft ]`, `[ 🧱 Roblox ]`).
-- **Botões Rápidos Instantâneos:** Cada jogo exibe sua própria linha de botões rápidos. Clicar em qualquer botão carrega instantaneamente a configuração do preset!
-- **➕ Criar Novo Jogo:** Adicione novos jogos/categorias com 1 clique (ex: `🎮 Valorant`, `🚀 GTA V`, `⚔️ Elden Ring`).
-- **➕ Adicionar Preset no Jogo:** Ao configurar os parâmetros desejados (tecla, sequência, ms, jitter, posição fixa X/Y), clique em **`➕ Adicionar Preset`** para criar um novo botão rápido!
-
-### 4. 🎯 Tecla Alvo & Atalho Global Personalizável
-- **Captura Unificada**: Escolha qualquer tecla do teclado, botões do mouse (`Clique Esquerdo`, `Direito`, `Clique Duplo`, `Clique Meio`, `Mouse 4 / X1`, `Mouse 5 / X2`) ou uma **Sequência Macro**.
-- **Atalho Global Customizável**: Altere a tecla de Ligar/Desligar instantaneamente (Padrão: **F6**).
-
-### 5. 🔄 Modos de Funcionamento & Anti-Cheat
-- **Modo Repetição (Spam)**: Repete a ação com intervalo customizável em milissegundos.
-- **🎲 Modo Humano (Jitter)**: Adiciona variação aleatória de tempo (ex: 50ms $\pm$ 5ms) para evitar padrões fixos e bypassar detecções anti-bot em jogos.
-- **✊ Modo Segurar (Hold)**: Mantém a tecla pressionada continuamente com pulsos de alta fidelidade.
-
-### 6. 📍 Posição do Clique
-- **Posição Atual do Cursor**: Clica exatamente onde o ponteiro do mouse estiver.
-- **🎯 Posição Fixa `(X, Y)`**: Define coordenadas fixas na tela com botão de **Captura Automática (3s)**.
-
-### 7. ⏱️ Condições de Parada Automática
-- **Limite por Cliques**: Parar automaticamente após $N$ cliques.
-- **Limite por Tempo**: Parar automaticamente após $X$ segundos de execução.
-
-### 8. 📊 Painel de Estatísticas em Tempo Real
-- Exibe o **Contador Total de Cliques**, o indicador **CPS** (*Clicks Per Second*) em tempo real e o tempo decorrido de execução.
-
-### 9. 📌 Opções & Integração com o Windows
-- **📌 Sempre no Topo**: Fixa a janela por cima de outros aplicativos ou jogos.
-- **🔔 Feedback Sonoro**: Emite um aviso sonoro sutil (*beep*) ao ativar/desativar.
-- **📥 Ocultar na Bandeja (System Tray)**: Minimiza para a área de notificação do Windows perto do relógio (`pystray`).
-- **🛡️ Verificação de Administrador**: Botão automático para reiniciar como Administrador (necessário para jogos com anti-cheat elevado como Genshin Impact).
-- **⚡ High-Precision Timer**: Utiliza a API do Windows (`winmm.dll`) com precisão de 1ms.
+- **Design Premium & Responsivo:** Layout focado em "Cards" com indicadores LED (bolinha pulsante) de status e micro-interações de *hover*.
+- **Construtor de Macros Modular 🧙‍♂️:** Uma interface gráfica para você arrastar e soltar blocos lógicos (`Segurar Tecla`, `Pausa`, `Clique Mouse`, `Arrastar Mouse`).
+- **Sistema de Captura Interativa 🎯:** Não sabe qual a coordenada do mouse? Clique no botão de capturar (📍), você terá 3 segundos para colocar o cursor onde quer, e o sistema copia a posição automaticamente!
+- **Painel Flutuante (Mini-Bar) ⠿:** Minimiza o aplicativo em uma barra super discreta no topo da tela, permitindo que você troque de presets enquanto trabalha ou joga.
+- **Perfis (Presets) Salvos:** Crie abas separadas por categorias (Genshin, Roblox, Trabalho) e salve os macros em um arquivo `.json` exportável para mandar para amigos.
 
 ---
 
-## 🚀 Como Usar
+## 📥 Como Baixar e Usar (Versão Pronta)
 
-### Opção 1: Usando o Executável (.exe)
-1. Abra o arquivo `dist/AutoClicker.exe`.
-2. Para criar uma sequência de teclas, clique em **`🔤 Sequência (Macro)`** e digite as teclas (ex: `F, F, ESPAÇO`).
-3. Para salvar como botão rápido no seu jogo, clique em **`➕ Adicionar Preset`**.
-4. Use o botão **`🖥️ BARRINHA FLUTUANTE`** para jogar com uma mini barrinha sobreposta na tela sem precisar de Alt+Tab!
+Você não precisa instalar Python para usar o aplicativo! Basta baixar o executável pronto:
 
-### Opção 2: Executando via Python
-```bash
-python autoclicker.py
-```
+1. Acesse a aba [**Releases**](https://github.com/henrique-jfp/AutoClick/releases) aqui no Github.
+2. Baixe o arquivo `AutoClicker.exe` da versão mais recente.
+3. Dê dois cliques e pronto! (Se o Windows SmartScreen bloquear, clique em "Mais Informações" -> "Executar assim mesmo").
+
+> **Nota:** Para alguns jogos executados em Tela Cheia ou com anti-cheat pesado, recomenda-se iniciar o `AutoClicker.exe` como Administrador.
 
 ---
 
-## 🔨 Como Gerar o Executável (.exe)
+## 🛠️ Como Rodar pelo Código-Fonte (Desenvolvedores)
 
-Para gerar a versão compilada executando PyInstaller com ícone personalizado:
+Se você é desenvolvedor e quer mexer no código, os requisitos são simples:
 
+1. Instale o Python (3.10 ou superior).
+2. Clone o repositório:
+   ```bash
+   git clone https://github.com/henrique-jfp/AutoClick.git
+   cd AutoClick
+   ```
+3. Instale as dependências:
+   ```bash
+   pip install pynput pillow
+   ```
+4. Execute a aplicação:
+   ```bash
+   python autoclicker.py
+   ```
+
+### Compilando seu próprio `.exe`
+Para compilar uma versão standalone, execute o script de build incluso:
 ```bash
+pip install pyinstaller
 python build_exe.py
 ```
+O executável final estará na pasta `dist/`.
 
-O executável final estará pronto em `dist/AutoClicker.exe`.
+---
+
+## 🤝 Contribuindo
+Sinta-se à vontade para abrir **Issues** relatando bugs ou enviar **Pull Requests** com novas ideias de funcionalidades!
+
+**Feito com foco em UI/UX e automação de alta performance.** ⚡
