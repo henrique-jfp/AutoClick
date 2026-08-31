@@ -1049,6 +1049,10 @@ class AutoClickerApp:
 
         set_windows_high_precision_timer(True)
         self.is_admin = check_is_admin()
+        
+        # Usage tracking for donation popup
+        self.total_run_time_sec = 0
+        self.last_donation_popup = 0
 
         # Dark theme premium palette applied
         self.bg_color = COLOR_BG_MAIN
@@ -2116,6 +2120,16 @@ class AutoClickerApp:
         if self.mini_bar_status_btn and self.mini_bar_status_btn.winfo_exists():
             self.mini_bar_status_btn.config(text=f"▶ ({self.hotkey_name})", bg=self.success_color)
 
+        # Update total run time
+        if hasattr(self, 'start_time'):
+            elapsed = int(time.time() - self.start_time)
+            self.total_run_time_sec += elapsed
+            self._save_config()
+            
+            # Show donation popup if used for more than 1 hour total
+            if self.total_run_time_sec > 3600:
+                self.show_donation_popup()
+
         self._play_sound(600, 100)
 
     def _play_sound(self, freq, duration):
@@ -2124,6 +2138,67 @@ class AutoClickerApp:
                 threading.Thread(target=lambda: winsound.Beep(freq, duration), daemon=True).start()
             except Exception:
                 pass
+
+    def show_donation_popup(self):
+        # Don't show if already showed recently (within 24 hours)
+        now = time.time()
+        if now - self.last_donation_popup < 86400:
+            return
+
+        self.last_donation_popup = now
+        self._save_config()
+
+        popup = tk.Toplevel(self.root)
+        popup.title("☕ Apoie o Projeto")
+        popup.geometry("450x300")
+        popup.configure(bg=COLOR_BG_MAIN)
+        popup.resizable(False, False)
+        popup.transient(self.root)
+        popup.grab_set()
+
+        # Center popup
+        x = self.root.winfo_x() + (self.root.winfo_width() // 2) - 225
+        y = self.root.winfo_y() + (self.root.winfo_height() // 2) - 150
+        popup.geometry(f"+{x}+{y}")
+
+        tk.Label(popup, text="⚡ O Auto Clicker já trabalhou bastante pra você!", font=(FONT_MAIN, 11, "bold"), bg=COLOR_BG_MAIN, fg=self.accent_color).pack(pady=(20, 5))
+        
+        msg = "Este programa é 100% gratuito e não tem anúncios.\nSe ele te ajudou a farmar ou poupou o seu tempo,\nconsidere pagar um café ☕ pro desenvolvedor!"
+        tk.Label(popup, text=msg, font=(FONT_MAIN, 9), bg=COLOR_BG_MAIN, fg=self.text_color, justify="center").pack(pady=10)
+
+        # Pix Key Box
+        pix_frame = tk.Frame(popup, bg=COLOR_BG_CARD, bd=1, relief="solid")
+        pix_frame.pack(pady=10, padx=20, fill="x")
+        
+        tk.Label(pix_frame, text="Chave PIX (Cole no seu Banco):", font=(FONT_MAIN, 8, "bold"), bg=COLOR_BG_CARD, fg=self.text_subtle).pack(pady=(10, 0))
+        
+        pix_key = "seu-pix-aqui@gmail.com" # PLACEHOLDER
+        e_pix = tk.Entry(pix_frame, font=(FONT_MONO, 10, "bold"), bg=COLOR_BG_INPUT, fg=self.success_color, justify="center", bd=0)
+        e_pix.insert(0, pix_key)
+        e_pix.config(state="readonly")
+        e_pix.pack(pady=10, padx=10, fill="x")
+
+        def copy_pix():
+            self.root.clipboard_clear()
+            self.root.clipboard_append(pix_key)
+            btn_copy.config(text="Copiado! ✔️", bg=self.success_color, fg=COLOR_BG_MAIN)
+            popup.after(2000, lambda: btn_copy.config(text="Copiar Chave PIX", bg=COLOR_BG_INPUT, fg=self.accent_color))
+
+        btn_copy = tk.Button(pix_frame, text="Copiar Chave PIX", font=(FONT_MAIN, 9, "bold"), bg=COLOR_BG_INPUT, fg=self.accent_color, bd=0, padx=10, pady=5, cursor="hand2", command=copy_pix)
+        btn_copy.pack(pady=(0, 10))
+
+        # Star Github button
+        def open_github():
+            import webbrowser
+            webbrowser.open("https://github.com/henrique-jfp/AutoClick")
+            popup.destroy()
+
+        btn_star = tk.Button(popup, text="⭐ Não tem PIX? Deixe uma Estrela no Github!", font=(FONT_MAIN, 9, "bold"), bg=COLOR_BG_MAIN, fg=self.accent_color, bd=0, cursor="hand2", command=open_github)
+        btn_star.pack(pady=(10, 5))
+
+        # Close button
+        btn_close = tk.Button(popup, text="Já apoiei / Fechar", font=(FONT_MAIN, 8), bg=COLOR_BG_MAIN, fg=self.text_subtle, bd=0, cursor="hand2", command=popup.destroy)
+        btn_close.pack(side="bottom", pady=15)
 
     def _parse_single_key(self, token):
         token_upper = str(token).upper()
@@ -2430,6 +2505,8 @@ class AutoClickerApp:
             "position_mode": self.position_mode.get(),
             "fixed_x": self.fixed_x.get(),
             "fixed_y": self.fixed_y.get(),
+            "total_run_time_sec": self.total_run_time_sec,
+            "last_donation_popup": self.last_donation_popup,
             "always_on_top": self.always_on_top.get(),
             "sound_enabled": self.sound_enabled.get(),
             "minimize_to_tray": self.minimize_to_tray.get(),
@@ -2505,6 +2582,8 @@ class AutoClickerApp:
             self.always_on_top.set(data.get("always_on_top", False))
             self.sound_enabled.set(data.get("sound_enabled", True))
             self.minimize_to_tray.set(data.get("minimize_to_tray", False))
+            self.total_run_time_sec = data.get("total_run_time_sec", 0)
+            self.last_donation_popup = data.get("last_donation_popup", 0)
         except Exception:
             pass
 
