@@ -2172,7 +2172,7 @@ class AutoClickerApp:
         
         tk.Label(pix_frame, text="Chave PIX (Cole no seu Banco):", font=(FONT_MAIN, 8, "bold"), bg=COLOR_BG_CARD, fg=self.text_subtle).pack(pady=(10, 0))
         
-        pix_key = "seu-pix-aqui@gmail.com" # PLACEHOLDER
+        pix_key = "985a15b4-7ffd-45a1-bd52-9456e4598ebb"
         e_pix = tk.Entry(pix_frame, font=(FONT_MONO, 10, "bold"), bg=COLOR_BG_INPUT, fg=self.success_color, justify="center", bd=0)
         e_pix.insert(0, pix_key)
         e_pix.config(state="readonly")
