@@ -193,9 +193,19 @@ class ModularMacroDialog(tk.Toplevel):
     def __init__(self, parent, game_name, preset_data=None, on_save_callback=None):
         super().__init__(parent)
         self.title("🧙‍♂️ Criador Modular Avançado de Macros por Blocos")
-        self.geometry("620x840")
-        self.minsize(600, 700)
+        self.minsize(620, 700)
         self.resizable(True, True)
+        
+        # Center window and adapt to screen height
+        screen_w = self.winfo_screenwidth()
+        screen_h = self.winfo_screenheight()
+        w, h = 640, 840
+        if screen_h < 900:
+            h = screen_h - 80
+        
+        x = int((screen_w / 2) - (w / 2))
+        y = int((screen_h / 2) - (h / 2))
+        self.geometry(f"{w}x{h}+{x}+{y}")
         self.configure(bg=COLOR_BG_MAIN)
         self.transient(parent)
         self.grab_set()
@@ -1022,9 +1032,20 @@ class AutoClickerApp:
     def __init__(self, root):
         self.root = root
         self.root.title("⚡ Auto Clicker Pro & Key Presser")
-        self.root.geometry("560x920")
-        self.root.minsize(500, 750)
+        
+        self.root.minsize(520, 750)
         self.root.resizable(True, True)
+        
+        # Center main window and adapt to screen height
+        screen_w = self.root.winfo_screenwidth()
+        screen_h = self.root.winfo_screenheight()
+        w, h = 580, 920
+        if screen_h < 1000:
+            h = screen_h - 100
+            
+        x = int((screen_w / 2) - (w / 2))
+        y = int((screen_h / 2) - (h / 2))
+        self.root.geometry(f"{w}x{h}+{x}+{y}")
 
         set_windows_high_precision_timer(True)
         self.is_admin = check_is_admin()
