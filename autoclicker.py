@@ -54,24 +54,53 @@ def set_windows_high_precision_timer(enable=True):
     except Exception:
         pass
 
-# --- UI CONSTANTS & UTILITIES ---
-COLOR_BG_MAIN = "#0F1117"
-COLOR_BG_CARD = "#171A23"
-COLOR_BG_INPUT = "#1E212C"
-COLOR_BORDER = "#2A2E3A"
-COLOR_PRIMARY = "#5B8CFF"
-COLOR_PRIMARY_HOVER = "#4A78E6"
-COLOR_SUCCESS = "#3ECF8E"
-COLOR_SUCCESS_HOVER = "#33B87D"
-COLOR_ERROR = "#FF5C5C"
-COLOR_ERROR_HOVER = "#E64A4A"
-COLOR_WARNING = "#FFB84D"
-COLOR_TEXT_MAIN = "#F5F6FA"
-COLOR_TEXT_SEC = "#9BA1B0"
-COLOR_TEXT_DISABLED = "#5A5F6E"
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
 
-FONT_MAIN = "Inter"
-FONT_MONO = "JetBrains Mono"
+# --- CONFIGURAÇÕES DE DOAÇÃO PIX ---
+PIX_KEY = "985a15b4-7ffd-45a1-bd52-9456e4598ebb"
+
+
+# --- UI CONSTANTS & UTILITIES ---
+# Tech-Minimalist Theme
+COLOR_BG_MAIN = "#09090B"
+COLOR_BG_CARD = "#18181B"
+COLOR_BG_INPUT = "#09090B"
+COLOR_BORDER = "#27272A"
+COLOR_PRIMARY = "#3B82F6"
+COLOR_PRIMARY_HOVER = "#2563EB"
+COLOR_SUCCESS = "#10B981"
+COLOR_SUCCESS_HOVER = "#059669"
+COLOR_ERROR = "#EF4444"
+COLOR_ERROR_HOVER = "#DC2626"
+COLOR_WARNING = "#F59E0B"
+COLOR_TEXT_MAIN = "#FAFAFA"
+COLOR_TEXT_SEC = "#A1A1AA"
+COLOR_TEXT_DISABLED = "#71717A"
+
+FONT_MAIN = "Segoe UI Variable Display"
+FONT_FALLBACK = "Segoe UI"
+FONT_MONO = "Cascadia Code"
+
+def get_font(size, weight="normal"):
+    return (FONT_MAIN, size, weight)
+
+def set_dark_titlebar(window):
+    try:
+        window.update()
+        DWMWA_USE_IMMERSIVE_DARK_MODE = 20
+        set_window_attribute = ctypes.windll.dwmapi.DwmSetWindowAttribute
+        hwnd = ctypes.windll.user32.GetParent(window.winfo_id())
+        rendering_policy = ctypes.c_int(2)
+        set_window_attribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, ctypes.byref(rendering_policy), ctypes.sizeof(rendering_policy))
+    except Exception:
+        pass
 
 def bind_hover(widget, normal_bg, hover_bg, normal_fg=None, hover_fg=None):
     def on_enter(e):
@@ -192,7 +221,7 @@ class ModularMacroDialog(tk.Toplevel):
     """Dynamic Modular Step-by-Step Macro Builder & Editor Dialog (Full Featured)"""
     def __init__(self, parent, game_name, preset_data=None, on_save_callback=None):
         super().__init__(parent)
-        self.title("🧙‍♂️ Criador Modular Avançado de Macros por Blocos")
+        self.title("Criador Modular de Macros")
         self.minsize(620, 700)
         self.resizable(True, True)
         
@@ -209,6 +238,8 @@ class ModularMacroDialog(tk.Toplevel):
         self.configure(bg=COLOR_BG_MAIN)
         self.transient(parent)
         self.grab_set()
+        
+        set_dark_titlebar(self)
 
         self.on_save_callback = on_save_callback
         self.game_name = game_name
@@ -301,89 +332,89 @@ class ModularMacroDialog(tk.Toplevel):
     def _create_widgets(self):
         # Header Banner with JSON Import/Export Buttons
         f_head = tk.Frame(self, bg=self.bg_color)
-        f_head.pack(fill="x", padx=15, pady=8)
+        f_head.pack(fill="x", padx=15, pady=12)
 
         f_title = tk.Frame(f_head, bg=self.bg_color)
         f_title.pack(side="left")
 
-        title_text = "✏️ Editar Preset por Blocos" if self.editing_preset else "🧙‍♂️ Criar Macro Modular por Blocos"
-        tk.Label(f_title, text=title_text, font=(FONT_MAIN, 12, "bold"), bg=self.bg_color, fg=self.accent_color).pack(anchor="w")
-        tk.Label(f_title, text=f"Perfil do Jogo: {self.game_name}", font=(FONT_MAIN, 8), bg=self.bg_color, fg=self.warning_color).pack(anchor="w")
+        title_text = "EDITAR PRESET" if self.editing_preset else "CRIAR PRESET"
+        tk.Label(f_title, text=title_text, font=(FONT_MAIN, 14, "bold"), bg=self.bg_color, fg=self.accent_color).pack(anchor="w")
+        tk.Label(f_title, text=f"PERFIL: {self.game_name}", font=(FONT_MAIN, 9, "bold"), bg=self.bg_color, fg=self.warning_color).pack(anchor="w")
 
         # JSON Import/Export Controls Top-Right
         f_json = tk.Frame(f_head, bg=self.bg_color)
         f_json.pack(side="right")
 
         btn_imp = tk.Button(
-            f_json, text="📥 Importar JSON", font=(FONT_MAIN, 8, "bold"), bg=COLOR_BORDER, fg=self.accent_color, bd=0, padx=6, pady=3, cursor="hand2", command=self._import_preset_json
+            f_json, text="IMPORTAR JSON", font=(FONT_MAIN, 9, "bold"), bg=COLOR_BORDER, fg=self.accent_color, bd=0, padx=8, pady=4, cursor="hand2", command=self._import_preset_json
         )
-        btn_imp.pack(side="left", padx=2)
+        btn_imp.pack(side="left", padx=4)
 
         btn_exp = tk.Button(
-            f_json, text="📤 Exportar JSON", font=(FONT_MAIN, 8, "bold"), bg=COLOR_BORDER, fg=self.warning_color, bd=0, padx=6, pady=3, cursor="hand2", command=self._export_preset_json
+            f_json, text="EXPORTAR JSON", font=(FONT_MAIN, 9, "bold"), bg=COLOR_BORDER, fg=self.warning_color, bd=0, padx=8, pady=4, cursor="hand2", command=self._export_preset_json
         )
-        btn_exp.pack(side="left", padx=2)
+        btn_exp.pack(side="left", padx=4)
 
         # Name & Hotkey Setup Card
-        f_meta_card = tk.Frame(self, bg=self.card_bg, padx=10, pady=6)
-        f_meta_card.pack(fill="x", padx=15, pady=3)
+        f_meta_card = tk.Frame(self, bg=self.card_bg, padx=12, pady=12)
+        f_meta_card.pack(fill="x", padx=15, pady=5)
 
         r1 = tk.Frame(f_meta_card, bg=self.card_bg)
         r1.pack(fill="x", pady=2)
 
-        tk.Label(r1, text="Nome do Preset:", font=(FONT_MAIN, 9, "bold"), bg=self.card_bg, fg=self.text_color).pack(side="left")
-        e_name = tk.Entry(r1, textvariable=self.var_name, font=(FONT_MAIN, 9, "bold"), bg=COLOR_BG_MAIN, fg=self.warning_color, bd=1, insertbackground="white")
+        tk.Label(r1, text="NOME DO PRESET:", font=(FONT_MAIN, 10, "bold"), bg=self.card_bg, fg=self.text_color).pack(side="left")
+        e_name = tk.Entry(r1, textvariable=self.var_name, font=(FONT_MAIN, 10, "bold"), bg=COLOR_BG_MAIN, fg=self.warning_color, bd=1, insertbackground="white")
         e_name.pack(side="left", fill="x", expand=True, padx=(8, 0))
         e_name.bind("<KeyRelease>", lambda e: self._update_live_preview())
 
         r2 = tk.Frame(f_meta_card, bg=self.card_bg)
-        r2.pack(fill="x", pady=4)
+        r2.pack(fill="x", pady=6)
 
-        tk.Label(r2, text="⌨️ Atalho Início:", font=(FONT_MAIN, 8, "bold"), bg=self.card_bg, fg=self.accent_color).pack(side="left")
-        e_hk = tk.Entry(r2, textvariable=self.var_hotkey_name, width=6, font=(FONT_MAIN, 8, "bold"), justify="center", bg=COLOR_BG_MAIN, fg=self.warning_color, bd=1)
-        e_hk.pack(side="left", padx=4)
+        tk.Label(r2, text="ATALHO INÍCIO:", font=(FONT_MAIN, 9, "bold"), bg=self.card_bg, fg=self.accent_color).pack(side="left")
+        e_hk = tk.Entry(r2, textvariable=self.var_hotkey_name, width=6, font=(FONT_MAIN, 9, "bold"), justify="center", bg=COLOR_BG_MAIN, fg=self.warning_color, bd=1)
+        e_hk.pack(side="left", padx=6)
 
-        tk.Label(r2, text="🚨 Parada de Emergência:", font=(FONT_MAIN, 8, "bold"), bg=self.card_bg, fg=self.danger_color).pack(side="left", padx=(10, 2))
-        e_em = tk.Entry(r2, textvariable=self.var_emergency_hotkey, width=6, font=(FONT_MAIN, 8, "bold"), justify="center", bg=COLOR_BG_MAIN, fg=self.danger_color, bd=1)
-        e_em.pack(side="left", padx=4)
+        tk.Label(r2, text="EMERGÊNCIA:", font=(FONT_MAIN, 9, "bold"), bg=self.card_bg, fg=self.danger_color).pack(side="left", padx=(12, 2))
+        e_em = tk.Entry(r2, textvariable=self.var_emergency_hotkey, width=6, font=(FONT_MAIN, 9, "bold"), justify="center", bg=COLOR_BG_MAIN, fg=self.danger_color, bd=1)
+        e_em.pack(side="left", padx=6)
 
         # Add Step Control Bar (Expanded with Mouse & Group Actions)
-        f_add_bar = tk.Frame(self, bg=self.card_bg, padx=10, pady=8)
-        f_add_bar.pack(fill="x", padx=15, pady=3)
+        f_add_bar = tk.Frame(self, bg=self.card_bg, padx=12, pady=12)
+        f_add_bar.pack(fill="x", padx=15, pady=5)
 
-        tk.Label(f_add_bar, text="➕ Adicionar Etapa ao Fluxo:", font=(FONT_MAIN, 9, "bold"), bg=self.card_bg, fg=self.accent_color).pack(anchor="w", pady=(0, 4))
+        tk.Label(f_add_bar, text="ADICIONAR AÇÃO:", font=(FONT_MAIN, 10, "bold"), bg=self.card_bg, fg=self.accent_color).pack(anchor="w", pady=(0, 6))
 
         # Row 1: Keyboard & Delay Actions
         f_add_row1 = tk.Frame(f_add_bar, bg=self.card_bg)
-        f_add_row1.pack(fill="x", pady=1)
+        f_add_row1.pack(fill="x", pady=2)
 
         add_buttons_row1 = [
-            ("✊ Segurar", "press_hold"),
-            ("🔄 Repetir", "tap_loop"),
-            ("👐 Soltar", "release"),
-            ("⏱️ Pausa", "pause"),
-            ("🚶 Caminhar", "hold_duration"),
-            ("🔤 Combo", "sequence_combo")
+            ("SEGURAR", "press_hold"),
+            ("REPETIR", "tap_loop"),
+            ("SOLTAR", "release"),
+            ("PAUSA", "pause"),
+            ("CAMINHAR", "hold_duration"),
+            ("COMBO", "sequence_combo")
         ]
 
         for label, stype in add_buttons_row1:
-            btn = tk.Button(f_add_row1, text=label, font=(FONT_MAIN, 8, "bold"), bg=COLOR_BORDER, fg=self.text_color, activebackground=COLOR_BORDER, bd=0, padx=5, pady=2, cursor="hand2", command=lambda t=stype: self.add_step(t))
-            btn.pack(side="left", padx=1)
+            btn = tk.Button(f_add_row1, text=label, font=(FONT_MAIN, 9, "bold"), bg=COLOR_BORDER, fg=self.text_color, activebackground=COLOR_BORDER, bd=0, padx=6, pady=4, cursor="hand2", command=lambda t=stype: self.add_step(t))
+            btn.pack(side="left", padx=2)
 
         # Row 2: Mouse Actions & Grouping
         f_add_row2 = tk.Frame(f_add_bar, bg=self.card_bg)
-        f_add_row2.pack(fill="x", pady=(3, 1))
+        f_add_row2.pack(fill="x", pady=(6, 2))
 
         add_buttons_row2 = [
-            ("🖱️ Clique", "mouse_click"),
-            ("📍 Mover", "mouse_move"),
-            ("🖐️ Arrastar", "mouse_drag"),
-            ("📜 Rolar", "mouse_scroll"),
-            ("📦 Agrupar", "group_block")
+            ("CLIQUE", "mouse_click"),
+            ("MOVER", "mouse_move"),
+            ("ARRASTAR", "mouse_drag"),
+            ("ROLAR", "mouse_scroll"),
+            ("AGRUPAR", "group_block")
         ]
 
         for label, stype in add_buttons_row2:
-            btn = tk.Button(f_add_row2, text=label, font=(FONT_MAIN, 8, "bold"), bg=COLOR_BORDER, fg=self.warning_color, activebackground=COLOR_BG_INPUT, bd=0, padx=6, pady=2, cursor="hand2", command=lambda t=stype: self.add_step(t))
+            btn = tk.Button(f_add_row2, text=label, font=(FONT_MAIN, 9, "bold"), bg=COLOR_BORDER, fg=self.warning_color, activebackground=COLOR_BG_INPUT, bd=0, padx=6, pady=4, cursor="hand2", command=lambda t=stype: self.add_step(t))
             btn.pack(side="left", padx=2)
 
         # Scrollable Steps Container Canvas & Frame
@@ -408,38 +439,39 @@ class ModularMacroDialog(tk.Toplevel):
         self.f_summary = tk.Frame(self, bg=COLOR_BG_MAIN, padx=10, pady=8, bd=1, relief="solid")
         self.f_summary.pack(fill="x", padx=15, pady=(4, 6))
 
-        tk.Label(self.f_summary, text="💡 Resumo Visual da Sequência Dinâmica:", font=(FONT_MAIN, 8, "bold"), bg=COLOR_BG_MAIN, fg=self.accent_color).pack(anchor="w")
-        self.lbl_flow_summary = tk.Label(self.f_summary, text="", font=(FONT_MAIN, 8), bg=COLOR_BG_MAIN, fg=self.text_color, wraplength=550, justify="left")
-        self.lbl_flow_summary.pack(anchor="w", pady=(2, 0))
+        tk.Label(self.f_summary, text="RESUMO DA SEQUÊNCIA:", font=(FONT_MAIN, 9, "bold"), bg=COLOR_BG_MAIN, fg=self.accent_color).pack(anchor="w")
+        self.lbl_flow_summary = tk.Label(self.f_summary, text="", font=(FONT_MAIN, 9), bg=COLOR_BG_MAIN, fg=self.text_color, wraplength=550, justify="left")
+        self.lbl_flow_summary.pack(anchor="w", pady=(4, 0))
 
         # Action Buttons Row
         f_actions = tk.Frame(self, bg=self.bg_color)
-        f_actions.pack(fill="x", padx=15, pady=(4, 10))
+        f_actions.pack(fill="x", padx=15, pady=(8, 12))
 
         btn_save = tk.Button(
             f_actions,
-            text="✔️ Salvar Preset Modular",
-            font=(FONT_MAIN, 10, "bold"),
+            text="SALVAR PRESET",
+            font=(FONT_MAIN, 11, "bold"),
             bg=self.success_color,
             fg=COLOR_BG_MAIN,
             activebackground=COLOR_SUCCESS,
             bd=0,
-            padx=14,
-            pady=6,
+            padx=18,
+            pady=8,
             cursor="hand2",
             command=self._save_preset
         )
-        btn_save.pack(side="right")
+        bind_hover(btn_save, self.success_color, COLOR_SUCCESS_HOVER)
+        btn_save.pack(side="right", padx=(10, 0))
 
         btn_cancel = tk.Button(
             f_actions,
-            text="Cancelar",
-            font=(FONT_MAIN, 9),
-            bg=COLOR_BORDER,
+            text="CANCELAR",
+            font=(FONT_MAIN, 10, "bold"),
+            bg=COLOR_BG_INPUT,
             fg=self.text_color,
             bd=0,
-            padx=10,
-            pady=6,
+            padx=12,
+            pady=8,
             cursor="hand2",
             command=self.destroy
         )
@@ -512,7 +544,7 @@ class ModularMacroDialog(tk.Toplevel):
                 f_left = tk.Frame(card, bg=card_bg)
                 f_left.pack(side="left", padx=(0, 6))
 
-                chk_icon = "👁️" if is_enabled else "🙈"
+                chk_icon = "[ON]" if is_enabled else "[OFF]"
                 btn_toggle = tk.Button(
                     f_left, text=chk_icon, font=(FONT_MAIN, 8), bg=card_bg, fg=self.accent_color if is_enabled else self.text_subtle, bd=0, padx=2, cursor="hand2", command=lambda i=idx: self.toggle_step_enabled(i)
                 )
@@ -526,22 +558,22 @@ class ModularMacroDialog(tk.Toplevel):
                 f_ctrls.pack(side="left", fill="x", expand=True)
 
                 if s_type == "press_hold":
-                    tk.Label(f_ctrls, text="✊ Segurar Tecla:", font=(FONT_MAIN, 8, "bold"), bg=card_bg, fg=self.warning_color if is_enabled else text_fg).pack(side="left")
+                    tk.Label(f_ctrls, text="SEGURAR TECLA:", font=(FONT_MAIN, 8, "bold"), bg=card_bg, fg=self.warning_color if is_enabled else text_fg).pack(side="left")
                     v_key = tk.StringVar(value=step.get("key", "w"))
                     e_key = tk.Entry(f_ctrls, textvariable=v_key, width=6, font=(FONT_MAIN, 8, "bold"), justify="center", bg=COLOR_BG_MAIN, fg=text_fg, bd=1)
                     e_key.pack(side="left", padx=4)
                     e_key.bind("<KeyRelease>", lambda e, s=step, v=v_key: self._on_step_field_change(s, "key", v.get()))
-                    btn_cap = tk.Button(f_ctrls, text="🎯", font=(FONT_MAIN, 7), bg=COLOR_BG_INPUT, fg=self.accent_color, bd=0, padx=3, pady=1, cursor="hand2")
+                    btn_cap = tk.Button(f_ctrls, text="ALVO", font=(FONT_MAIN, 7), bg=COLOR_BG_INPUT, fg=self.accent_color, bd=0, padx=3, pady=1, cursor="hand2")
                     btn_cap.config(command=lambda s=step, b=btn_cap: self._capture_key_for_step(s, "key", b))
                     btn_cap.pack(side="left", padx=1)
 
                 elif s_type == "tap_loop":
-                    tk.Label(f_ctrls, text="🔄 Repetir Tecla:", font=(FONT_MAIN, 8, "bold"), bg=card_bg, fg=self.success_color if is_enabled else text_fg).pack(side="left")
+                    tk.Label(f_ctrls, text="REPETIR TECLA:", font=(FONT_MAIN, 8, "bold"), bg=card_bg, fg=self.success_color if is_enabled else text_fg).pack(side="left")
                     v_key = tk.StringVar(value=step.get("key", "shift"))
                     e_key = tk.Entry(f_ctrls, textvariable=v_key, width=5, font=(FONT_MAIN, 8, "bold"), justify="center", bg=COLOR_BG_MAIN, fg=text_fg, bd=1)
                     e_key.pack(side="left", padx=2)
                     e_key.bind("<KeyRelease>", lambda e, s=step, v=v_key: self._on_step_field_change(s, "key", v.get()))
-                    btn_cap = tk.Button(f_ctrls, text="🎯", font=(FONT_MAIN, 7), bg=COLOR_BG_INPUT, fg=self.accent_color, bd=0, padx=3, pady=1, cursor="hand2")
+                    btn_cap = tk.Button(f_ctrls, text="ALVO", font=(FONT_MAIN, 7), bg=COLOR_BG_INPUT, fg=self.accent_color, bd=0, padx=3, pady=1, cursor="hand2")
                     btn_cap.config(command=lambda s=step, b=btn_cap: self._capture_key_for_step(s, "key", b))
                     btn_cap.pack(side="left", padx=1)
 
@@ -559,33 +591,33 @@ class ModularMacroDialog(tk.Toplevel):
 
                     # Min-Max Range Toggle
                     v_rng = tk.BooleanVar(value=step.get("use_range", False))
-                    chk_rng = tk.Checkbutton(f_ctrls, text="🎲 Faixa Min-Max", variable=v_rng, bg=card_bg, fg=self.text_subtle, selectcolor=COLOR_BG_MAIN, command=lambda s=step, v=v_rng: self._on_step_field_change(s, "use_range", v.get()))
+                    chk_rng = tk.Checkbutton(f_ctrls, text="Faixa Min-Max", variable=v_rng, bg=card_bg, fg=self.text_subtle, selectcolor=COLOR_BG_INPUT, activebackground=card_bg, activeforeground=self.text_color, command=lambda s=step, v=v_rng: self._on_step_field_change(s, "use_range", v.get()))
                     chk_rng.pack(side="left", padx=(4, 0))
 
                 elif s_type == "release":
-                    tk.Label(f_ctrls, text="👐 Soltar Tecla:", font=(FONT_MAIN, 8, "bold"), bg=card_bg, fg=self.danger_color if is_enabled else text_fg).pack(side="left")
+                    tk.Label(f_ctrls, text="SOLTAR TECLA:", font=(FONT_MAIN, 8, "bold"), bg=card_bg, fg=self.danger_color if is_enabled else text_fg).pack(side="left")
                     v_key = tk.StringVar(value=step.get("key", "w"))
                     e_key = tk.Entry(f_ctrls, textvariable=v_key, width=6, font=(FONT_MAIN, 8, "bold"), justify="center", bg=COLOR_BG_MAIN, fg=text_fg, bd=1)
                     e_key.pack(side="left", padx=4)
                     e_key.bind("<KeyRelease>", lambda e, s=step, v=v_key: self._on_step_field_change(s, "key", v.get()))
-                    btn_cap = tk.Button(f_ctrls, text="🎯", font=(FONT_MAIN, 7), bg=COLOR_BG_INPUT, fg=self.accent_color, bd=0, padx=3, pady=1, cursor="hand2")
+                    btn_cap = tk.Button(f_ctrls, text="ALVO", font=(FONT_MAIN, 7), bg=COLOR_BG_INPUT, fg=self.accent_color, bd=0, padx=3, pady=1, cursor="hand2")
                     btn_cap.config(command=lambda s=step, b=btn_cap: self._capture_key_for_step(s, "key", b))
                     btn_cap.pack(side="left", padx=1)
 
                 elif s_type == "pause":
-                    tk.Label(f_ctrls, text="⏱️ Pausa (s):", font=(FONT_MAIN, 8, "bold"), bg=card_bg, fg=self.warning_color if is_enabled else text_fg).pack(side="left")
+                    tk.Label(f_ctrls, text="PAUSA (s):", font=(FONT_MAIN, 8, "bold"), bg=card_bg, fg=self.warning_color if is_enabled else text_fg).pack(side="left")
                     v_dur = tk.DoubleVar(value=step.get("duration_sec", 0.45))
                     e_dur = tk.Entry(f_ctrls, textvariable=v_dur, width=5, font=(FONT_MAIN, 8, "bold"), justify="center", bg=COLOR_BG_MAIN, fg=text_fg, bd=1)
                     e_dur.pack(side="left", padx=4)
                     e_dur.bind("<KeyRelease>", lambda e, s=step, v=v_dur: self._on_step_field_change(s, "duration_sec", v.get()))
 
                 elif s_type == "hold_duration":
-                    tk.Label(f_ctrls, text="🚶 Caminhar Tecla:", font=(FONT_MAIN, 8, "bold"), bg=card_bg, fg=self.accent_color if is_enabled else text_fg).pack(side="left")
+                    tk.Label(f_ctrls, text="CAMINHAR TECLA:", font=(FONT_MAIN, 8, "bold"), bg=card_bg, fg=self.accent_color if is_enabled else text_fg).pack(side="left")
                     v_key = tk.StringVar(value=step.get("key", "w"))
                     e_key = tk.Entry(f_ctrls, textvariable=v_key, width=5, font=(FONT_MAIN, 8, "bold"), justify="center", bg=COLOR_BG_MAIN, fg=text_fg, bd=1)
                     e_key.pack(side="left", padx=2)
                     e_key.bind("<KeyRelease>", lambda e, s=step, v=v_key: self._on_step_field_change(s, "key", v.get()))
-                    btn_cap = tk.Button(f_ctrls, text="🎯", font=(FONT_MAIN, 7), bg=COLOR_BG_INPUT, fg=self.accent_color, bd=0, padx=3, pady=1, cursor="hand2")
+                    btn_cap = tk.Button(f_ctrls, text="ALVO", font=(FONT_MAIN, 7), bg=COLOR_BG_INPUT, fg=self.accent_color, bd=0, padx=3, pady=1, cursor="hand2")
                     btn_cap.config(command=lambda s=step, b=btn_cap: self._capture_key_for_step(s, "key", b))
                     btn_cap.pack(side="left", padx=1)
 
@@ -596,7 +628,7 @@ class ModularMacroDialog(tk.Toplevel):
                     e_dur.bind("<KeyRelease>", lambda e, s=step, v=v_dur: self._on_step_field_change(s, "duration_sec", v.get()))
 
                 elif s_type == "sequence_combo":
-                    tk.Label(f_ctrls, text="🔤 Combo:", font=(FONT_MAIN, 8, "bold"), bg=card_bg, fg=self.warning_color if is_enabled else text_fg).pack(side="left")
+                    tk.Label(f_ctrls, text="COMBO:", font=(FONT_MAIN, 8, "bold"), bg=card_bg, fg=self.warning_color if is_enabled else text_fg).pack(side="left")
                     raw_seq = step.get("sequence_raw", ["shift+space"])
                     v_seq = tk.StringVar(value=", ".join(raw_seq) if isinstance(raw_seq, list) else str(raw_seq))
                     e_seq = tk.Entry(f_ctrls, textvariable=v_seq, width=12, font=(FONT_MAIN, 8, "bold"), justify="center", bg=COLOR_BG_MAIN, fg=self.warning_color if is_enabled else text_fg, bd=1)
@@ -604,14 +636,14 @@ class ModularMacroDialog(tk.Toplevel):
                     e_seq.bind("<KeyRelease>", lambda e, s=step, v=v_seq: self._on_step_field_change(s, "sequence_raw", [t.strip() for t in v.get().replace(",", " ").split() if t.strip()]))
 
                 elif s_type == "mouse_click":
-                    tk.Label(f_ctrls, text="🖱️ Clique Mouse:", font=(FONT_MAIN, 8, "bold"), bg=card_bg, fg=self.accent_color if is_enabled else text_fg).pack(side="left")
+                    tk.Label(f_ctrls, text="CLIQUE MOUSE:", font=(FONT_MAIN, 8, "bold"), bg=card_bg, fg=self.accent_color if is_enabled else text_fg).pack(side="left")
                     v_btn = tk.StringVar(value=step.get("button", "left"))
                     om = tk.OptionMenu(f_ctrls, v_btn, "left", "right", "middle", command=lambda val, s=step: self._on_step_field_change(s, "button", val))
                     om.config(font=(FONT_MAIN, 7, "bold"), bg=COLOR_BG_MAIN, fg=text_fg, bd=0, highlightthickness=0)
                     om.pack(side="left", padx=2)
 
                     v_use_pos = tk.BooleanVar(value=step.get("use_coords", False))
-                    chk_pos = tk.Checkbutton(f_ctrls, text="X,Y", variable=v_use_pos, bg=card_bg, fg=self.text_subtle, selectcolor=COLOR_BG_MAIN, command=lambda s=step, v=v_use_pos: self._on_step_field_change(s, "use_coords", v.get()))
+                    chk_pos = tk.Checkbutton(f_ctrls, text="X,Y", variable=v_use_pos, bg=card_bg, fg=self.text_subtle, selectcolor=COLOR_BG_INPUT, activebackground=card_bg, activeforeground=self.text_color, command=lambda s=step, v=v_use_pos: self._on_step_field_change(s, "use_coords", v.get()))
                     chk_pos.pack(side="left", padx=2)
 
                     v_x = tk.IntVar(value=step.get("x", 0))
@@ -623,12 +655,12 @@ class ModularMacroDialog(tk.Toplevel):
                     e_y = tk.Entry(f_ctrls, textvariable=v_y, width=4, font=(FONT_MAIN, 8), justify="center", bg=COLOR_BG_MAIN, fg=text_fg, bd=1)
                     e_y.pack(side="left", padx=1)
                     e_y.bind("<KeyRelease>", lambda e, s=step, v=v_y: self._on_step_field_change(s, "y", v.get()))
-                    btn_cap_pos = tk.Button(f_ctrls, text="📍", font=(FONT_MAIN, 7), bg=COLOR_BG_INPUT, fg=self.accent_color, bd=0, padx=3, pady=1, cursor="hand2")
+                    btn_cap_pos = tk.Button(f_ctrls, text="COORD", font=(FONT_MAIN, 7), bg=COLOR_BG_INPUT, fg=self.accent_color, bd=0, padx=3, pady=1, cursor="hand2")
                     btn_cap_pos.config(command=lambda s=step, b=btn_cap_pos: self._capture_pos_for_step(s, {"x": "x", "y": "y"}, b))
                     btn_cap_pos.pack(side="left", padx=1)
 
                 elif s_type == "mouse_move":
-                    tk.Label(f_ctrls, text="📍 Mover Mouse X,Y:", font=(FONT_MAIN, 8, "bold"), bg=card_bg, fg=self.warning_color if is_enabled else text_fg).pack(side="left")
+                    tk.Label(f_ctrls, text="MOVER MOUSE X,Y:", font=(FONT_MAIN, 8, "bold"), bg=card_bg, fg=self.warning_color if is_enabled else text_fg).pack(side="left")
                     v_x = tk.IntVar(value=step.get("x", 500))
                     e_x = tk.Entry(f_ctrls, textvariable=v_x, width=4, font=(FONT_MAIN, 8), justify="center", bg=COLOR_BG_MAIN, fg=text_fg, bd=1)
                     e_x.pack(side="left", padx=2)
@@ -638,7 +670,7 @@ class ModularMacroDialog(tk.Toplevel):
                     e_y = tk.Entry(f_ctrls, textvariable=v_y, width=4, font=(FONT_MAIN, 8), justify="center", bg=COLOR_BG_MAIN, fg=text_fg, bd=1)
                     e_y.pack(side="left", padx=2)
                     e_y.bind("<KeyRelease>", lambda e, s=step, v=v_y: self._on_step_field_change(s, "y", v.get()))
-                    btn_cap_pos = tk.Button(f_ctrls, text="📍", font=(FONT_MAIN, 7), bg=COLOR_BG_INPUT, fg=self.accent_color, bd=0, padx=3, pady=1, cursor="hand2")
+                    btn_cap_pos = tk.Button(f_ctrls, text="COORD", font=(FONT_MAIN, 7), bg=COLOR_BG_INPUT, fg=self.accent_color, bd=0, padx=3, pady=1, cursor="hand2")
                     btn_cap_pos.config(command=lambda s=step, b=btn_cap_pos: self._capture_pos_for_step(s, {"x": "x", "y": "y"}, b))
                     btn_cap_pos.pack(side="left", padx=1)
 
@@ -663,12 +695,12 @@ class ModularMacroDialog(tk.Toplevel):
                     e_y2 = tk.Entry(f_ctrls, textvariable=v_y2, width=4, font=(FONT_MAIN, 8), justify="center", bg=COLOR_BG_MAIN, fg=text_fg, bd=1)
                     e_y2.pack(side="left", padx=1)
                     e_y2.bind("<KeyRelease>", lambda e, s=step, v=v_y2: self._on_step_field_change(s, "y2", v.get()))
-                    btn_cap_drag = tk.Button(f_ctrls, text="📍", font=(FONT_MAIN, 7), bg=COLOR_BG_INPUT, fg=self.accent_color, bd=0, padx=3, pady=1, cursor="hand2")
+                    btn_cap_drag = tk.Button(f_ctrls, text="COORD", font=(FONT_MAIN, 7), bg=COLOR_BG_INPUT, fg=self.accent_color, bd=0, padx=3, pady=1, cursor="hand2")
                     btn_cap_drag.config(command=lambda s=step, b=btn_cap_drag: self._capture_pos_for_step(s, {"x1": "x1", "y1": "y1", "x2": "x2", "y2": "y2"}, b))
                     btn_cap_drag.pack(side="left", padx=1)
 
                 elif s_type == "mouse_scroll":
-                    tk.Label(f_ctrls, text="📜 Rolar Mouse:", font=(FONT_MAIN, 8, "bold"), bg=card_bg, fg=self.accent_color if is_enabled else text_fg).pack(side="left")
+                    tk.Label(f_ctrls, text="ROLAR MOUSE:", font=(FONT_MAIN, 8, "bold"), bg=card_bg, fg=self.accent_color if is_enabled else text_fg).pack(side="left")
                     v_dir = tk.StringVar(value=step.get("direction", "down"))
                     om_dir = tk.OptionMenu(f_ctrls, v_dir, "down", "up", command=lambda val, s=step: self._on_step_field_change(s, "direction", val))
                     om_dir.config(font=(FONT_MAIN, 7, "bold"), bg=COLOR_BG_MAIN, fg=text_fg, bd=0, highlightthickness=0)
@@ -921,9 +953,9 @@ class AutoClickerApp:
 
     # Default presets dictionary grouped by Game Category
     DEFAULT_GAMES = {
-        "🎮 Genshin Impact": [
+        "Genshin Impact": [
             {
-                "name": "🏃 Run Dash 7x + Walk 6s (Stamina Loop)",
+                "name": "Run Dash 7x + Walk 6s",
                 "target_type": "modular_macro",
                 "target_name": "Macro Dash 7x + Walk 6s",
                 "hotkey_name": "F12",
@@ -939,7 +971,7 @@ class AutoClickerApp:
                 "interval_ms": 50
             },
             {
-                "name": "⚔️ Diálogo / Coletar (F)",
+                "name": "Diálogo / Coletar (F)",
                 "target_type": "keyboard",
                 "target_name": "'F'",
                 "hotkey_name": "F12",
@@ -950,7 +982,7 @@ class AutoClickerApp:
                 "jitter_ms": 8
             },
             {
-                "name": "🏹 Ataque Rápido",
+                "name": "Ataque Rápido",
                 "target_type": "mouse",
                 "target_name": "Clique Esquerdo",
                 "target_mouse_action": "left",
@@ -962,7 +994,7 @@ class AutoClickerApp:
                 "jitter_ms": 5
             },
             {
-                "name": "🏃 Sprint Jump / BHop",
+                "name": "Sprint Jump / BHop",
                 "target_type": "sequence",
                 "target_name": "Seq: Shift+Espaço",
                 "target_sequence_raw": ["shift+space"],
@@ -974,7 +1006,7 @@ class AutoClickerApp:
                 "jitter_ms": 10
             },
             {
-                "name": "💫 Segurar Habilidade (E)",
+                "name": "Segurar Habilidade (E)",
                 "target_type": "keyboard",
                 "target_name": "'E'",
                 "hotkey_name": "F12",
@@ -982,9 +1014,9 @@ class AutoClickerApp:
                 "mode": "hold"
             }
         ],
-        "⛏️ Minecraft": [
+        "Minecraft": [
             {
-                "name": "⚔️ Fast CPS (50ms)",
+                "name": "Fast CPS (50ms)",
                 "target_type": "mouse",
                 "target_name": "Clique Esquerdo",
                 "target_mouse_action": "left",
@@ -996,7 +1028,7 @@ class AutoClickerApp:
                 "jitter_ms": 10
             },
             {
-                "name": "🛡️ Auto Shield",
+                "name": "Auto Shield",
                 "target_type": "mouse",
                 "target_name": "Clique Direito",
                 "target_mouse_action": "right",
@@ -1006,9 +1038,9 @@ class AutoClickerApp:
                 "interval_ms": 100
             }
         ],
-        "🧱 Roblox": [
+        "Roblox": [
             {
-                "name": "🚀 Auto-Farm (Espaço)",
+                "name": "Auto-Farm (Espaço)",
                 "target_type": "keyboard",
                 "target_name": "Espaço",
                 "hotkey_name": "F12",
@@ -1017,7 +1049,7 @@ class AutoClickerApp:
                 "interval_ms": 80
             },
             {
-                "name": "🖱️ Clicker Rápido",
+                "name": "Clicker Rápido",
                 "target_type": "mouse",
                 "target_name": "Clique Esquerdo",
                 "target_mouse_action": "left",
@@ -1031,21 +1063,10 @@ class AutoClickerApp:
 
     def __init__(self, root):
         self.root = root
-        self.root.title("⚡ Auto Clicker Pro & Key Presser")
+        self.root.title("AutoClicker Pro")
         
-        self.root.minsize(520, 750)
+        self.root.minsize(520, 600)
         self.root.resizable(True, True)
-        
-        # Center main window and adapt to screen height
-        screen_w = self.root.winfo_screenwidth()
-        screen_h = self.root.winfo_screenheight()
-        w, h = 580, 920
-        if screen_h < 1000:
-            h = screen_h - 100
-            
-        x = int((screen_w / 2) - (w / 2))
-        y = int((screen_h / 2) - (h / 2))
-        self.root.geometry(f"{w}x{h}+{x}+{y}")
 
         set_windows_high_precision_timer(True)
         self.is_admin = check_is_admin()
@@ -1066,6 +1087,7 @@ class AutoClickerApp:
         self.warning_color = COLOR_WARNING
         
         self.root.configure(bg=self.bg_color)
+        set_dark_titlebar(self.root)
 
         # Set Window Icon if exists
         self.icon_image = None
@@ -1135,7 +1157,7 @@ class AutoClickerApp:
 
         # Games & Profiles State
         self.game_profiles = json.loads(json.dumps(self.DEFAULT_GAMES))
-        self.active_game = "🎮 Genshin Impact"
+        self.active_game = "Genshin Impact"
         self.active_preset_name = ""
 
         # Floating Mini Overlay Window
@@ -1168,6 +1190,33 @@ class AutoClickerApp:
         # Setup GUI Components
         self._setup_styles()
         self._create_widgets()
+
+        # Dynamically size window to fit all contents without scrolling by default
+        self.root.update_idletasks()
+        
+        # main_container req height plus headers and bottom margins
+        # Because main_outer and headers are packed, the root reqheight should reflect the non-canvas parts.
+        # BUT since canvas is expand=True, it doesn't push the window size.
+        # We manually push the root geometry:
+        content_h = self.main_container.winfo_reqheight()
+        # header_frame + status_frame + bottom_frame usually take around ~200px
+        # We can just sum them up or use root's current reqheight (minus the canvas's default reqheight, plus content_h)
+        base_h = self.root.winfo_reqheight()
+        canvas_h = self.main_canvas.winfo_reqheight()
+        
+        optimal_h = base_h - canvas_h + content_h + 30 # Reduced padding so it fits 1080p exactly without scroll
+        
+        screen_w = self.root.winfo_screenwidth()
+        screen_h = self.root.winfo_screenheight()
+        w = 580
+        
+        # Max out height at screen height minus 40 for taskbar margin
+        if optimal_h > screen_h - 40:
+            optimal_h = screen_h - 40
+            
+        x = int((screen_w / 2) - (w / 2))
+        y = int((screen_h / 2) - (optimal_h / 2))
+        self.root.geometry(f"{w}x{optimal_h}+{x}+{y}")
 
         # Apply initial window state
         self._toggle_always_on_top()
@@ -1208,42 +1257,51 @@ class AutoClickerApp:
     def _create_widgets(self):
         # Top Header
         header_frame = tk.Frame(self.root, bg=self.bg_color)
-        header_frame.pack(fill="x", padx=20, pady=(15, 10))
+        header_frame.pack(fill="x", padx=20, pady=(20, 10))
 
-        title_lbl = tk.Label(header_frame, text="⚡ Auto Clicker Pro", font=(FONT_MAIN, 20, "bold"), bg=self.bg_color, fg=self.accent_color)
+        title_lbl = tk.Label(header_frame, text="AUTOCLICKER PRO", font=(FONT_MAIN, 20, "bold"), bg=self.bg_color, fg=self.accent_color)
         title_lbl.pack(side="left")
 
         # Mini Bar Overlay Toggle Button
         btn_mini_mode = tk.Button(
-            header_frame, text="🖥️ Flutuante", font=(FONT_MAIN, 10, "bold"),
-            bg=COLOR_BG_INPUT, fg=self.accent_color, bd=0, padx=8, pady=4, cursor="hand2", command=self.open_mini_bar
+            header_frame, text="💻 MODO FLUTUANTE", font=(FONT_MAIN, 9, "bold"),
+            bg=self.card_bg, fg=self.accent_color, highlightbackground=COLOR_BORDER, highlightthickness=1,
+            bd=0, padx=12, pady=6, cursor="hand2", command=self.open_mini_bar
         )
-        bind_hover(btn_mini_mode, COLOR_BG_INPUT, COLOR_BORDER)
-        btn_mini_mode.pack(side="left", padx=10)
+        bind_hover(btn_mini_mode, self.card_bg, COLOR_BORDER)
+        btn_mini_mode.pack(side="left", padx=(15, 5))
+
+        btn_donate = tk.Button(
+            header_frame, text="💛 APOIAR", font=(FONT_MAIN, 9, "bold"),
+            bg=self.card_bg, fg=COLOR_WARNING, highlightbackground=COLOR_BORDER, highlightthickness=1,
+            bd=0, padx=12, pady=6, cursor="hand2", command=self.open_donation_window
+        )
+        bind_hover(btn_donate, self.card_bg, COLOR_BORDER)
+        btn_donate.pack(side="left", padx=5)
 
         if self.is_admin:
-            admin_btn = tk.Label(header_frame, text="🛡️ ADMIN", font=(FONT_MAIN, 10, "bold"), bg=COLOR_BG_INPUT, fg=self.success_color, padx=6, pady=4)
+            admin_btn = tk.Label(header_frame, text="ADMIN", font=(FONT_MAIN, 10, "bold"), bg=COLOR_BG_INPUT, fg=self.success_color, padx=10, pady=6)
             admin_btn.pack(side="right")
         else:
             admin_btn = tk.Button(
-                header_frame, text="⚠️ ADMIN", font=(FONT_MAIN, 10, "bold"), 
-                bg=self.warning_color, fg=COLOR_BG_MAIN, bd=0, padx=6, pady=4, cursor="hand2", command=relaunch_as_admin
+                header_frame, text="REINICIAR COMO ADMIN", font=(FONT_MAIN, 10, "bold"), 
+                bg=self.warning_color, fg=COLOR_BG_MAIN, bd=0, padx=10, pady=6, cursor="hand2", command=relaunch_as_admin
             )
             bind_hover(admin_btn, self.warning_color, "#FFC973")
             admin_btn.pack(side="right")
 
         # Status Card (Redesigned)
         self.status_frame = tk.Frame(self.root, bg=self.card_bg, highlightbackground=COLOR_BORDER, highlightthickness=1, cursor="hand2")
-        self.status_frame.pack(fill="x", padx=20, pady=(0, 10))
+        self.status_frame.pack(fill="x", padx=20, pady=(0, 5))
         self.status_frame.bind("<Button-1>", lambda e: self.prepare_capture_hotkey())
         
-        status_inner = tk.Frame(self.status_frame, bg=self.card_bg, padx=12, pady=12)
+        status_inner = tk.Frame(self.status_frame, bg=self.card_bg, padx=12, pady=5)
         status_inner.pack(fill="x")
         status_inner.bind("<Button-1>", lambda e: self.prepare_capture_hotkey())
 
         # Pulse indicator & Text
         status_top = tk.Frame(status_inner, bg=self.card_bg)
-        status_top.pack(fill="x", pady=(0, 6))
+        status_top.pack(fill="x", pady=(0, 5))
         status_top.bind("<Button-1>", lambda e: self.prepare_capture_hotkey())
 
         self.pulse_ind = PulseIndicator(status_top, size=14)
@@ -1251,10 +1309,10 @@ class AutoClickerApp:
         self.pulse_ind.bind("<Button-1>", lambda e: self.prepare_capture_hotkey())
 
         self.status_label = tk.Label(
-            status_top, text=f"PARADO (Atalho: {self.hotkey_name})", 
+            status_top, text=f"PARADO (ATALHO: {self.hotkey_name})", 
             font=(FONT_MAIN, 13, "bold"), bg=self.card_bg, fg=COLOR_TEXT_SEC, cursor="hand2"
         )
-        self.status_label.pack(side="left", padx=8)
+        self.status_label.pack(side="left", padx=10)
         self.status_label.bind("<Button-1>", lambda e: self.prepare_capture_hotkey())
 
         # Stats Badges
@@ -1264,39 +1322,81 @@ class AutoClickerApp:
 
         def make_badge(parent, text):
             f = tk.Frame(parent, bg=COLOR_BG_INPUT, padx=6, pady=2, highlightbackground=COLOR_BORDER, highlightthickness=1)
-            l = tk.Label(f, text=text, font=(FONT_MONO, 12, "bold"), bg=COLOR_BG_INPUT, fg=self.accent_color)
-            f.pack(side="left", padx=(0, 6))
+            l = tk.Label(f, text=text, font=(FONT_MONO, 11, "bold"), bg=COLOR_BG_INPUT, fg=self.accent_color)
+            f.pack(side="left", padx=(0, 8))
             f.bind("<Button-1>", lambda e: self.prepare_capture_hotkey())
             l.bind("<Button-1>", lambda e: self.prepare_capture_hotkey())
             return l
 
-        self.lbl_clicks = make_badge(stats_bot, "Cliques: 0")
+        self.lbl_clicks = make_badge(stats_bot, "CLIQUES: 0")
         self.lbl_cps = make_badge(stats_bot, "CPS: 0.0")
-        self.lbl_time = make_badge(stats_bot, "Tempo: 00:00")
+        self.lbl_time = make_badge(stats_bot, "TEMPO: 00:00")
 
         # Bottom Action Bar (Fixed)
-        self.bottom_frame = tk.Frame(self.root, bg=self.bg_color, pady=15, padx=20)
+        self.bottom_frame = tk.Frame(self.root, bg=self.bg_color, pady=5, padx=20)
         self.bottom_frame.pack(side="bottom", fill="x")
 
         # Big Main Start/Stop Action Button
         self.btn_toggle = tk.Button(
-            self.bottom_frame, text=f"▶ INICIAR ({self.hotkey_name})", 
-            font=(FONT_MAIN, 15, "bold"), bg=self.success_color, fg=COLOR_BG_MAIN,
-            activebackground=COLOR_SUCCESS_HOVER, cursor="hand2", pady=12, bd=0
+            self.bottom_frame, text=f"INICIAR ({self.hotkey_name})", 
+            font=(FONT_MAIN, 16, "bold"), bg=self.success_color, fg=COLOR_BG_MAIN,
+            activebackground=COLOR_SUCCESS_HOVER, cursor="hand2", pady=5, bd=0
         )
         bind_hover(self.btn_toggle, self.success_color, COLOR_SUCCESS_HOVER)
         self.btn_toggle.pack(fill="x")
 
-        # Main Container (Remaining space)
-        main_container = tk.Frame(self.root, bg=self.bg_color)
-        main_container.pack(fill="both", expand=True, padx=20, pady=0)
+        # Main Scrollable Container (Remaining space)
+        main_outer = tk.Frame(self.root, bg=self.bg_color)
+        main_outer.pack(fill="both", expand=True, padx=20, pady=0)
+        
+        self.main_canvas = tk.Canvas(main_outer, bg=self.bg_color, highlightthickness=0)
+        self.main_scrollbar = ttk.Scrollbar(main_outer, orient="vertical", command=self.main_canvas.yview)
+        
+        self.main_container = tk.Frame(self.main_canvas, bg=self.bg_color)
+        
+        self.main_canvas_window = self.main_canvas.create_window((0, 0), window=self.main_container, anchor="nw")
+        self.main_canvas.configure(yscrollcommand=self.main_scrollbar.set)
+        
+        def _configure_canvas(event):
+            self.main_canvas.itemconfig(self.main_canvas_window, width=event.width)
+            _check_scrollbar()
+
+        self.main_canvas.bind("<Configure>", _configure_canvas)
+        
+        def _configure_inner_frame(event):
+            self.main_canvas.configure(scrollregion=self.main_canvas.bbox("all"))
+            _check_scrollbar()
+
+        def _check_scrollbar():
+            # If the canvas height is greater than or equal to the container height, hide scrollbar
+            if self.main_container.winfo_reqheight() <= self.main_canvas.winfo_height():
+                self.main_scrollbar.pack_forget()
+            else:
+                self.main_scrollbar.pack(side="right", fill="y")
+        
+        self.main_container.bind("<Configure>", _configure_inner_frame)
+        
+        # Mousewheel scrolling
+        def _on_mousewheel(event):
+            self.main_canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+        
+        def _bind_mousewheel(event):
+            self.main_canvas.bind_all("<MouseWheel>", _on_mousewheel)
+            
+        def _unbind_mousewheel(event):
+            self.main_canvas.unbind_all("<MouseWheel>")
+            
+        main_outer.bind("<Enter>", _bind_mousewheel)
+        main_outer.bind("<Leave>", _unbind_mousewheel)
+        
+        self.main_canvas.pack(side="left", fill="both", expand=True)
 
         # Helper to create styled section cards
         def create_section_card(parent, number, title):
-            card = tk.Frame(parent, bg=self.card_bg, highlightbackground=COLOR_BORDER, highlightthickness=1, padx=12, pady=12)
-            card.pack(fill="x", pady=5)
+            card = tk.Frame(parent, bg=self.card_bg, highlightbackground=COLOR_BORDER, highlightthickness=1, padx=10, pady=8)
+            card.pack(fill="x", pady=3)
             header = tk.Frame(card, bg=self.card_bg)
-            header.pack(fill="x", pady=(0, 8))
+            header.pack(fill="x", pady=(0, 6))
             
             # Badge number
             badge = tk.Frame(header, bg=COLOR_BG_INPUT, highlightbackground=COLOR_BORDER, highlightthickness=1, padx=6, pady=2)
@@ -1307,11 +1407,11 @@ class AutoClickerApp:
             return card
 
         # --- SECTION 0: GAMES & PRESETS ---
-        card_games = tk.Frame(main_container, bg=self.card_bg, highlightbackground=COLOR_BORDER, highlightthickness=1, padx=12, pady=12)
+        card_games = tk.Frame(self.main_container, bg=self.card_bg, highlightbackground=COLOR_BORDER, highlightthickness=1, padx=16, pady=16)
         card_games.pack(fill="x", pady=5)
         
-        lbl_sec0 = tk.Label(card_games, text="🎮 Perfis & Presets Rápidos", font=(FONT_MAIN, 15, "bold"), bg=self.card_bg, fg=self.text_color)
-        lbl_sec0.pack(anchor="w", pady=(0, 8))
+        lbl_sec0 = tk.Label(card_games, text="PERFIS & PRESETS", font=(FONT_MAIN, 13, "bold"), bg=self.card_bg, fg=self.text_color)
+        lbl_sec0.pack(anchor="w", pady=(0, 5))
 
         self.f_game_tabs = tk.Frame(card_games, bg=self.card_bg)
         self.f_game_tabs.pack(fill="x", pady=2)
@@ -1326,9 +1426,9 @@ class AutoClickerApp:
         self._render_quick_preset_buttons()
 
         # --- SECTION 1: TARGET KEY ---
-        card1 = create_section_card(main_container, "1", "Alvo & Atalhos")
+        self.card1 = create_section_card(self.main_container, "1", "ALVO & ATALHOS")
 
-        f_target = tk.Frame(card1, bg=self.card_bg)
+        f_target = tk.Frame(self.card1, bg=self.card_bg)
         f_target.pack(fill="x", pady=4)
 
         # target display
@@ -1339,33 +1439,33 @@ class AutoClickerApp:
         self.key_display_lbl.pack(side="left", padx=5)
 
         self.btn_capture = tk.Button(
-            f_target, text="🎯 Capturar Alvo", font=(FONT_MAIN, 12, "bold"),
+            f_target, text="CAPTURAR ALVO", font=(FONT_MAIN, 12, "bold"),
             bg=COLOR_BG_INPUT, fg=self.accent_color, activebackground=COLOR_BORDER, command=self.prepare_capture_target, cursor="hand2", padx=10, pady=5, bd=0
         )
         bind_hover(self.btn_capture, COLOR_BG_INPUT, COLOR_BORDER)
         self.btn_capture.pack(side="left", padx=6)
 
         # Actions Row
-        actions_row = tk.Frame(card1, bg=self.card_bg)
+        actions_row = tk.Frame(self.card1, bg=self.card_bg)
         actions_row.pack(fill="x", pady=(8, 0))
 
         self.btn_hotkey = tk.Button(
-            actions_row, text=f"⌨️ Atalho: [{self.hotkey_name}]", font=(FONT_MAIN, 11, "bold"),
+            actions_row, text=f"ATALHO: [{self.hotkey_name}]", font=(FONT_MAIN, 11, "bold"),
             bg=COLOR_BG_INPUT, fg=self.text_color, activebackground=COLOR_BORDER, command=self.prepare_capture_hotkey, cursor="hand2", padx=8, pady=4, bd=0
         )
         bind_hover(self.btn_hotkey, COLOR_BG_INPUT, COLOR_BORDER)
         self.btn_hotkey.pack(side="left", padx=(0, 5))
 
         self.btn_emergency_hotkey = tk.Button(
-            actions_row, text=f"🚨 Emergência: [{self.emergency_hotkey_name}]", font=(FONT_MAIN, 11, "bold"),
+            actions_row, text=f"EMERGÊNCIA: [{self.emergency_hotkey_name}]", font=(FONT_MAIN, 11, "bold"),
             bg=COLOR_BG_INPUT, fg=self.danger_color, activebackground=COLOR_BORDER, command=self.prepare_capture_emergency_hotkey, cursor="hand2", padx=8, pady=4, bd=0
         )
         bind_hover(self.btn_emergency_hotkey, COLOR_BG_INPUT, COLOR_BORDER)
         self.btn_emergency_hotkey.pack(side="left")
 
         # Quick targets
-        basic_presets_frame = tk.Frame(card1, bg=self.card_bg)
-        basic_presets_frame.pack(fill="x", pady=(10, 0))
+        basic_presets_frame = tk.Frame(self.card1, bg=self.card_bg)
+        basic_presets_frame.pack(fill="x", pady=(5, 0))
         tk.Label(basic_presets_frame, text="Ações rápidas:", font=(FONT_MAIN, 12, "bold"), bg=self.card_bg, fg=COLOR_TEXT_SEC).pack(side="left", padx=(0, 6))
         
         preset_items = [
@@ -1383,35 +1483,35 @@ class AutoClickerApp:
             btn.pack(side="left", padx=3)
 
         # --- SECTION 2: MODE & FREQUENCY ---
-        card2 = create_section_card(main_container, "2", "Modo & Velocidade")
+        self.card2 = create_section_card(self.main_container, "2", "MODO & VELOCIDADE")
         
-        f_modes = tk.Frame(card2, bg=self.card_bg)
+        f_modes = tk.Frame(self.card2, bg=self.card_bg)
         f_modes.pack(fill="x", pady=2)
-        ttk.Radiobutton(f_modes, text="🔄 Repetição (Spam)", value="spam", variable=self.mode, command=self._on_mode_change).pack(side="left", padx=(0, 20))
-        ttk.Radiobutton(f_modes, text="✊ Segurar (Hold)", value="hold", variable=self.mode, command=self._on_mode_change).pack(side="left")
+        tk.Radiobutton(f_modes, text="Repetição (Spam)", value="spam", variable=self.mode, bg=self.card_bg, fg=self.text_color, selectcolor=COLOR_BG_INPUT, activebackground=self.card_bg, activeforeground=self.text_color, font=(FONT_MAIN, 9), command=self._on_mode_change).pack(side="left", padx=(0, 20))
+        tk.Radiobutton(f_modes, text="Segurar (Hold)", value="hold", variable=self.mode, bg=self.card_bg, fg=self.text_color, selectcolor=COLOR_BG_INPUT, activebackground=self.card_bg, activeforeground=self.text_color, font=(FONT_MAIN, 9), command=self._on_mode_change).pack(side="left")
 
-        self.f_interval = tk.Frame(card2, bg=self.card_bg)
-        self.f_interval.pack(fill="x", pady=(10, 0))
+        self.f_interval = tk.Frame(self.card2, bg=self.card_bg)
+        self.f_interval.pack(fill="x", pady=(5, 0))
         tk.Label(self.f_interval, text="Intervalo (ms):", font=(FONT_MAIN, 12, "bold"), bg=self.card_bg, fg=self.text_color).pack(side="left")
         self.entry_interval = tk.Entry(self.f_interval, width=6, font=(FONT_MONO, 12), justify="center", bg=COLOR_BG_INPUT, fg=self.text_color, bd=1, relief=tk.SOLID, insertbackground="white")
         self.entry_interval.insert(0, str(self.interval_ms.get()))
         self.entry_interval.pack(side="left", padx=6)
 
-        ttk.Checkbutton(self.f_interval, text="🎲 Humano (Jitter ±ms):", variable=self.use_jitter).pack(side="left", padx=(15, 6))
+        tk.Checkbutton(self.f_interval, text="Jitter (±ms):", variable=self.use_jitter, bg=self.card_bg, fg=self.text_color, selectcolor=COLOR_BG_INPUT, activebackground=self.card_bg, activeforeground=self.text_color, font=(FONT_MAIN, 9)).pack(side="left", padx=(15, 6))
         self.entry_jitter = tk.Entry(self.f_interval, width=4, font=(FONT_MONO, 12), justify="center", bg=COLOR_BG_INPUT, fg=self.text_color, bd=1, relief=tk.SOLID, insertbackground="white")
         self.entry_jitter.insert(0, str(self.jitter_ms.get()))
         self.entry_jitter.pack(side="left")
 
         # --- SECTION 3: MOUSE POSITION ---
-        card3 = create_section_card(main_container, "3", "Posição do Clique")
+        self.card3 = create_section_card(self.main_container, "3", "POSIÇÃO DO CLIQUE")
         
-        f_pos_radios = tk.Frame(card3, bg=self.card_bg)
+        f_pos_radios = tk.Frame(self.card3, bg=self.card_bg)
         f_pos_radios.pack(fill="x")
-        ttk.Radiobutton(f_pos_radios, text="📍 Posição Atual do Cursor", value="current", variable=self.position_mode).pack(side="left", padx=(0, 20))
-        ttk.Radiobutton(f_pos_radios, text="🎯 Posição Fixa (X, Y)", value="fixed", variable=self.position_mode).pack(side="left")
+        tk.Radiobutton(f_pos_radios, text="Cursor Atual", value="current", variable=self.position_mode, bg=self.card_bg, fg=self.text_color, selectcolor=COLOR_BG_INPUT, activebackground=self.card_bg, activeforeground=self.text_color, font=(FONT_MAIN, 9)).pack(side="left", padx=(0, 20))
+        tk.Radiobutton(f_pos_radios, text="Coordenada Fixa", value="fixed", variable=self.position_mode, bg=self.card_bg, fg=self.text_color, selectcolor=COLOR_BG_INPUT, activebackground=self.card_bg, activeforeground=self.text_color, font=(FONT_MAIN, 9)).pack(side="left")
 
-        f_pos_inputs = tk.Frame(card3, bg=self.card_bg)
-        f_pos_inputs.pack(fill="x", pady=(10, 0))
+        f_pos_inputs = tk.Frame(self.card3, bg=self.card_bg)
+        f_pos_inputs.pack(fill="x", pady=(5, 0))
         tk.Label(f_pos_inputs, text="X:", font=(FONT_MAIN, 12, "bold"), bg=self.card_bg, fg=self.text_color).pack(side="left")
         self.entry_x = tk.Entry(f_pos_inputs, width=5, font=(FONT_MONO, 12), justify="center", bg=COLOR_BG_INPUT, fg=self.text_color, bd=1, relief=tk.SOLID, insertbackground="white")
         self.entry_x.insert(0, str(self.fixed_x.get()))
@@ -1423,23 +1523,23 @@ class AutoClickerApp:
         self.entry_y.pack(side="left", padx=(4, 15))
 
         self.btn_cap_pos = tk.Button(
-            f_pos_inputs, text="📍 Capturar (3s)", font=(FONT_MAIN, 11, "bold"),
+            f_pos_inputs, text="CAPTURAR (3s)", font=(FONT_MAIN, 11, "bold"),
             bg=COLOR_BG_INPUT, fg=self.accent_color, activebackground=COLOR_BORDER, command=self.prepare_capture_position, cursor="hand2", padx=8, pady=3, bd=0
         )
         bind_hover(self.btn_cap_pos, COLOR_BG_INPUT, COLOR_BORDER)
         self.btn_cap_pos.pack(side="left")
         
-        # --- SECTION 4: REAL-TIME EXECUTION LOG ACCORDION ---
-        card_log = tk.Frame(main_container, bg=self.card_bg, highlightbackground=COLOR_BORDER, highlightthickness=1, padx=12, pady=12)
-        card_log.pack(fill="x", pady=5)
+        # --- SECTION 4: REAL-TIME EXECUTION LOG (HIDDEN) ---
+        card_log = tk.Frame(self.main_container, bg=self.card_bg, highlightbackground=COLOR_BORDER, highlightthickness=1, padx=16, pady=16)
+        # card_log.pack(fill="x", pady=5) # Hidden per premium aesthetic
         
-        lbl_log = tk.Label(card_log, text="📜 Log de Execução em Tempo Real", font=(FONT_MAIN, 12, "bold"), bg=self.card_bg, fg=COLOR_TEXT_SEC)
+        lbl_log = tk.Label(card_log, text="LOG DE EXECUÇÃO", font=(FONT_MAIN, 11, "bold"), bg=self.card_bg, fg=COLOR_TEXT_SEC)
         lbl_log.pack(anchor="w")
 
         f_log_text = tk.Frame(card_log, bg=self.card_bg)
         f_log_text.pack(fill="x", pady=(8, 0))
 
-        self.txt_log = tk.Text(f_log_text, height=4, font=(FONT_MONO, 11), bg=COLOR_BG_INPUT, fg=self.success_color, bd=1, highlightbackground=COLOR_BORDER, highlightthickness=1, state="disabled")
+        self.txt_log = tk.Text(f_log_text, height=3, font=(FONT_MONO, 10), bg=COLOR_BG_INPUT, fg=self.success_color, bd=1, highlightbackground=COLOR_BORDER, highlightthickness=1, state="disabled")
         self.txt_log.pack(fill="x", expand=True)
         self.log_message("Sistema pronto. Pressione o atalho para iniciar.")
 
@@ -1472,6 +1572,82 @@ class AutoClickerApp:
                 pass
 
         self._update_hotkey_ui()
+
+    # --- DONATION WINDOW ---
+    def open_donation_window(self):
+        win = tk.Toplevel(self.root)
+        win.title("Apoiar Projeto")
+        win.geometry("380x540")
+        win.configure(bg=self.bg_color)
+        win.resizable(False, False)
+        
+        # Center window
+        win.update_idletasks()
+        x = self.root.winfo_x() + (self.root.winfo_width() // 2) - (380 // 2)
+        y = self.root.winfo_y() + (self.root.winfo_height() // 2) - (540 // 2)
+        win.geometry(f"+{x}+{y}")
+        
+        win.transient(self.root)
+        win.grab_set()
+
+        lbl_title = tk.Label(win, text="💛 MUITO OBRIGADO!", font=(FONT_MAIN, 16, "bold"), bg=self.bg_color, fg=COLOR_WARNING)
+        lbl_title.pack(pady=(25, 10))
+        
+        lbl_sub = tk.Label(win, text="Escaneie o QR Code abaixo pelo app\ndo seu banco para doar via PIX.", font=(FONT_MAIN, 11), bg=self.bg_color, fg=self.text_color)
+        lbl_sub.pack(pady=(0, 20))
+
+        img_lbl = tk.Label(win, bg=self.bg_color)
+        img_lbl.pack(pady=10)
+        
+        try:
+            from PIL import Image, ImageTk
+            import os
+            
+            # Load real image
+            img_path = resource_path("pix_qrcode.png")
+            if os.path.exists(img_path):
+                qr_img = Image.open(img_path)
+                qr_img = qr_img.resize((210, 210), Image.Resampling.LANCZOS)
+                qr_photo = ImageTk.PhotoImage(qr_img)
+                img_lbl.config(image=qr_photo)
+                img_lbl.image = qr_photo # keep reference
+            else:
+                img_lbl.config(text="[ QR Code não encontrado. ]", fg=COLOR_ERROR)
+        except Exception as e:
+            img_lbl.config(text=f"[ Erro ao carregar imagem: {e} ]", fg=COLOR_ERROR)
+
+        lbl_ou = tk.Label(win, text="Ou copie a chave PIX (Copia e Cola):", font=(FONT_MAIN, 10), bg=self.bg_color, fg=COLOR_TEXT_SEC)
+        lbl_ou.pack(pady=(20, 5))
+
+        # Using PIX_KEY config variable
+        pix_key = PIX_KEY
+
+        key_frame = tk.Frame(win, bg=COLOR_BG_INPUT, highlightbackground=COLOR_BORDER, highlightthickness=1)
+        key_frame.pack(fill="x", padx=15, pady=5)
+        
+        # Use a Label instead of Entry to avoid the white background "readonly" issue in Tkinter
+        # We can make it selectable using a Text widget, or just keep it as a Label since we have a COPY button.
+        entry_key = tk.Text(key_frame, font=(FONT_MONO, 9), bg=COLOR_BG_INPUT, fg=self.text_color, bd=0, height=1, width=38)
+        entry_key.insert("1.0", pix_key)
+        entry_key.tag_configure("center", justify="center")
+        entry_key.tag_add("center", "1.0", "end")
+        entry_key.config(state="disabled", cursor="arrow") # Just use the Copy button
+        entry_key.pack(fill="x", padx=5, pady=10)
+
+        def copy_pix():
+            self.root.clipboard_clear()
+            self.root.clipboard_append(pix_key)
+            self.root.update()
+            btn_copy.config(text="✔️ CHAVE COPIADA!", bg=self.success_color, fg=COLOR_BG_MAIN)
+            win.after(2000, lambda: btn_copy.config(text="📋 COPIAR CHAVE PIX", bg=self.card_bg, fg=self.text_color))
+
+        btn_copy = tk.Button(
+            win, text="📋 COPIAR CHAVE PIX", font=(FONT_MAIN, 11, "bold"),
+            bg=self.card_bg, fg=self.text_color, bd=0, padx=10, pady=12, cursor="hand2", command=copy_pix
+        )
+        bind_hover(btn_copy, self.card_bg, COLOR_BG_INPUT)
+        btn_copy.pack(fill="x", padx=40, pady=(10, 20))
+
 
     # --- FLOATING MINI OVERLAY TOOLBAR (DYNAMIC RESIZING & GAME SELECTOR) ---
     def open_mini_bar(self):
@@ -1521,7 +1697,7 @@ class AutoClickerApp:
 
         # Start/Stop Button on Mini Bar
         btn_bg = self.success_color if not self.is_running else self.danger_color
-        btn_text = f"▶ ({self.hotkey_name})" if not self.is_running else f"⏹ ({self.hotkey_name})"
+        btn_text = f"INICIAR ({self.hotkey_name})" if not self.is_running else f"PARAR ({self.hotkey_name})"
         self.mini_bar_status_btn = tk.Button(
             self.mini_bar_inner_frame, text=btn_text, font=(FONT_MAIN, 11, "bold"),
             bg=btn_bg, fg=COLOR_BG_MAIN, bd=0, padx=12, pady=4, cursor="hand2", command=self.toggle_autoclicker
@@ -1530,7 +1706,7 @@ class AutoClickerApp:
 
         # Restore Full Window Button (Config)
         btn_restore = tk.Button(
-            self.mini_bar_inner_frame, text="⚙", font=(FONT_MAIN, 13, "bold"),
+            self.mini_bar_inner_frame, text="OPÇÕES", font=(FONT_MAIN, 10, "bold"),
             bg=COLOR_BG_INPUT, fg=self.text_color, bd=0, padx=8, pady=4, cursor="hand2", command=self.close_mini_bar
         )
         bind_hover(btn_restore, COLOR_BG_INPUT, COLOR_BORDER)
@@ -1597,11 +1773,15 @@ class AutoClickerApp:
             self.mini_bar_window = None
         self.root.deiconify()
 
-    # --- GAMES & QUICK PRESET BUTTONS DYNAMIC RENDERING ---
     def _render_game_tabs(self):
         for widget in self.f_game_tabs.winfo_children():
             widget.destroy()
 
+        COLUMNS = 4
+        for i in range(COLUMNS):
+            self.f_game_tabs.columnconfigure(i, weight=1)
+
+        idx = 0
         for game_name in self.game_profiles.keys():
             is_active = (game_name == self.active_game)
             btn_bg = COLOR_BORDER if is_active else COLOR_BG_INPUT
@@ -1612,22 +1792,25 @@ class AutoClickerApp:
                 bg=btn_bg, fg=btn_fg, bd=0, padx=12, pady=5, cursor="hand2", command=lambda g=game_name: self.switch_game(g)
             )
             if not is_active: bind_hover(btn, COLOR_BG_INPUT, COLOR_BORDER)
-            btn.pack(side="left", padx=3)
+            btn.grid(row=idx // COLUMNS, column=idx % COLUMNS, padx=2, pady=3, sticky="ew")
+            idx += 1
 
         btn_add_game = tk.Button(
-            self.f_game_tabs, text="➕ Novo", font=(FONT_MAIN, 11, "bold"),
+            self.f_game_tabs, text="NOVO JOGO", font=(FONT_MAIN, 10, "bold"),
             bg=self.success_color, fg=COLOR_BG_MAIN, bd=0, padx=8, pady=5, cursor="hand2", command=self.create_new_game
         )
         bind_hover(btn_add_game, self.success_color, COLOR_SUCCESS_HOVER)
-        btn_add_game.pack(side="left", padx=(8, 3))
+        btn_add_game.grid(row=idx // COLUMNS, column=idx % COLUMNS, padx=2, pady=3, sticky="ew")
+        idx += 1
 
         if len(self.game_profiles) > 1:
             btn_del_game = tk.Button(
-                self.f_game_tabs, text="❌", font=(FONT_MAIN, 11, "bold"),
-                bg=self.danger_color, fg=COLOR_BG_MAIN, bd=0, padx=6, pady=5, cursor="hand2", command=self.delete_current_game
+                self.f_game_tabs, text="EXCLUIR JOGO", font=(FONT_MAIN, 10, "bold"),
+                bg=self.danger_color, fg=COLOR_BG_MAIN, bd=0, padx=8, pady=5, cursor="hand2", command=self.delete_current_game
             )
             bind_hover(btn_del_game, self.danger_color, COLOR_ERROR_HOVER)
-            btn_del_game.pack(side="left", padx=3)
+            btn_del_game.grid(row=idx // COLUMNS, column=idx % COLUMNS, padx=2, pady=3, sticky="ew")
+            idx += 1
 
     def _render_quick_preset_buttons(self):
         for widget in self.f_quick_buttons.winfo_children():
@@ -1640,39 +1823,35 @@ class AutoClickerApp:
         if not presets:
             tk.Label(self.f_quick_buttons, text="Nenhum preset neste jogo.", font=(FONT_MAIN, 11, "italic"), bg=self.card_bg, fg=self.text_subtle).pack(side="left")
         else:
-            for preset in presets:
+            # Grid Layout to avoid horizontal clipping (wraps to next row)
+            COLUMNS = 2
+            for i in range(COLUMNS):
+                self.f_quick_buttons.columnconfigure(i, weight=1)
+
+            for idx, preset in enumerate(presets):
                 p_name = preset.get("name", "Preset")
                 is_active = (p_name == self.active_preset_name)
                 btn_bg = self.accent_color if is_active else COLOR_BG_INPUT
                 btn_fg = COLOR_BG_MAIN if is_active else self.text_color
 
                 pill_frame = tk.Frame(self.f_quick_buttons, bg=btn_bg, bd=0, highlightbackground=COLOR_BORDER, highlightthickness=1 if not is_active else 0)
-                pill_frame.pack(side="left", padx=3, pady=3)
+                # Use Grid instead of Pack to create multiple rows automatically
+                pill_frame.grid(row=idx // COLUMNS, column=idx % COLUMNS, padx=4, pady=4, sticky="ew")
+
+                # Configure pill_frame to center/expand its button
+                pill_frame.columnconfigure(0, weight=1)
 
                 btn = tk.Button(
-                    pill_frame, text=p_name, font=(FONT_MAIN, 11, "bold" if is_active else "normal"),
-                    bg=btn_bg, fg=btn_fg, activebackground=COLOR_PRIMARY_HOVER, bd=0, padx=8, pady=4, cursor="hand2", command=lambda p=preset: self.apply_preset(p)
+                    pill_frame, text=p_name, font=(FONT_MAIN, 10, "bold" if is_active else "normal"),
+                    bg=btn_bg, fg=btn_fg, activebackground=COLOR_PRIMARY_HOVER, bd=0, padx=8, pady=6, cursor="hand2", command=lambda p=preset: self.apply_preset(p)
                 )
-                btn.pack(side="left")
-                truncate_text(btn, 130, p_name)
-
-                # Inline Edit
-                btn_edit = tk.Button(
-                    pill_frame, text="✏", font=(FONT_MAIN, 10), bg=btn_bg, fg=COLOR_BG_MAIN if is_active else self.accent_color,
-                    activebackground=COLOR_PRIMARY_HOVER, bd=0, padx=4, pady=4, cursor="hand2", command=lambda p=preset: self.edit_preset(p)
-                )
-                btn_edit.pack(side="left")
-
-                # Inline Delete
-                btn_del = tk.Button(
-                    pill_frame, text="🗑", font=(FONT_MAIN, 10), bg=btn_bg, fg=COLOR_BG_MAIN if is_active else self.danger_color,
-                    activebackground=COLOR_PRIMARY_HOVER, bd=0, padx=4, pady=4, cursor="hand2", command=lambda p=preset: self.delete_preset(p)
-                )
-                btn_del.pack(side="left")
+                btn.grid(row=0, column=0, sticky="ew")
+                # Removed hard truncate so it can stretch, or use a larger truncate length
+                truncate_text(btn, 200, p_name)
 
         # Action Control Buttons Row
         btn_add_builder = tk.Button(
-            self.f_preset_actions, text="🧙‍♂️ Criar Novo Preset", font=(FONT_MAIN, 11, "bold"),
+            self.f_preset_actions, text="CRIAR NOVO PRESET", font=(FONT_MAIN, 11, "bold"),
             bg=COLOR_BORDER, fg=self.accent_color, activebackground=COLOR_BG_INPUT, bd=0, padx=12, pady=5, cursor="hand2", command=self.open_custom_macro_builder
         )
         bind_hover(btn_add_builder, COLOR_BORDER, COLOR_BG_INPUT)
@@ -1682,14 +1861,14 @@ class AutoClickerApp:
             active_p = next((p for p in presets if p.get("name") == self.active_preset_name), None)
             if active_p:
                 btn_edit_act = tk.Button(
-                    self.f_preset_actions, text="✏️ Editar", font=(FONT_MAIN, 11, "bold"),
+                    self.f_preset_actions, text="EDITAR PRESET", font=(FONT_MAIN, 11, "bold"),
                     bg=COLOR_BG_INPUT, fg=self.warning_color, bd=0, padx=10, pady=5, cursor="hand2", command=lambda: self.edit_preset(active_p)
                 )
                 bind_hover(btn_edit_act, COLOR_BG_INPUT, COLOR_BORDER)
                 btn_edit_act.pack(side="left", padx=3)
 
                 btn_del_act = tk.Button(
-                    self.f_preset_actions, text="🗑️ Excluir", font=(FONT_MAIN, 11, "bold"),
+                    self.f_preset_actions, text="EXCLUIR PRESET", font=(FONT_MAIN, 11, "bold"),
                     bg=COLOR_BG_INPUT, fg=self.danger_color, bd=0, padx=10, pady=5, cursor="hand2", command=lambda: self.delete_preset(active_p)
                 )
                 bind_hover(btn_del_act, COLOR_BG_INPUT, COLOR_BORDER)
@@ -1700,7 +1879,12 @@ class AutoClickerApp:
     def switch_game(self, game_name):
         if game_name in self.game_profiles:
             self.active_game = game_name
-            self.active_preset_name = ""
+            if self.game_profiles[game_name]:
+                first_preset = self.game_profiles[game_name][0]
+                self.active_preset_name = first_preset.get("name", "")
+                self.apply_preset(first_preset)
+            else:
+                self.active_preset_name = ""
             self._render_game_tabs()
             self._render_quick_preset_buttons()
             self._render_mini_bar_presets()
@@ -1823,6 +2007,14 @@ class AutoClickerApp:
         self.entry_y.delete(0, tk.END)
         self.entry_y.insert(0, str(self.fixed_y.get()))
 
+        # Dynamic Section Visibility
+        if self.target_type in ["modular_macro", "sequence"]:
+            self.card2.pack_forget()
+            self.card3.pack_forget()
+        else:
+            self.card2.pack(fill="x", pady=5, after=self.card1)
+            self.card3.pack(fill="x", pady=5, after=self.card2)
+
         self._on_mode_change()
         self._render_quick_preset_buttons()
         self._render_mini_bar_presets()
@@ -1908,7 +2100,7 @@ class AutoClickerApp:
                 self.fixed_x.set(pos[0])
                 self.fixed_y.set(pos[1])
                 self.position_mode.set("fixed")
-                self.btn_cap_pos.config(text="📍 Capturar Posição (3s)", state="normal")
+                self.btn_cap_pos.config(text="COORD Capturar Posição (3s)", state="normal")
                 self.is_capturing_pos = False
                 self.log_message(f"Posição fixa capturada: ({pos[0]}, {pos[1]})")
                 self._play_sound(1200, 80)
@@ -2164,19 +2356,19 @@ class AutoClickerApp:
         tk.Label(popup, text="⚡ O Auto Clicker já trabalhou bastante pra você!", font=(FONT_MAIN, 11, "bold"), bg=COLOR_BG_MAIN, fg=self.accent_color).pack(pady=(20, 5))
         
         msg = "Este programa é 100% gratuito e não tem anúncios.\nSe ele te ajudou a farmar ou poupou o seu tempo,\nconsidere pagar um café ☕ pro desenvolvedor!"
-        tk.Label(popup, text=msg, font=(FONT_MAIN, 9), bg=COLOR_BG_MAIN, fg=self.text_color, justify="center").pack(pady=10)
+        tk.Label(popup, text=msg, font=(FONT_MAIN, 9), bg=COLOR_BG_MAIN, fg=self.text_color, justify="center").pack(pady=5)
 
         # Pix Key Box
         pix_frame = tk.Frame(popup, bg=COLOR_BG_CARD, bd=1, relief="solid")
-        pix_frame.pack(pady=10, padx=20, fill="x")
+        pix_frame.pack(pady=5, padx=20, fill="x")
         
-        tk.Label(pix_frame, text="Chave PIX (Cole no seu Banco):", font=(FONT_MAIN, 8, "bold"), bg=COLOR_BG_CARD, fg=self.text_subtle).pack(pady=(10, 0))
+        tk.Label(pix_frame, text="Chave PIX (Cole no seu Banco):", font=(FONT_MAIN, 8, "bold"), bg=COLOR_BG_CARD, fg=self.text_subtle).pack(pady=(5, 0))
         
         pix_key = "985a15b4-7ffd-45a1-bd52-9456e4598ebb"
         e_pix = tk.Entry(pix_frame, font=(FONT_MONO, 10, "bold"), bg=COLOR_BG_INPUT, fg=self.success_color, justify="center", bd=0)
         e_pix.insert(0, pix_key)
         e_pix.config(state="readonly")
-        e_pix.pack(pady=10, padx=10, fill="x")
+        e_pix.pack(pady=5, padx=10, fill="x")
 
         def copy_pix():
             self.root.clipboard_clear()
@@ -2185,7 +2377,7 @@ class AutoClickerApp:
             popup.after(2000, lambda: btn_copy.config(text="Copiar Chave PIX", bg=COLOR_BG_INPUT, fg=self.accent_color))
 
         btn_copy = tk.Button(pix_frame, text="Copiar Chave PIX", font=(FONT_MAIN, 9, "bold"), bg=COLOR_BG_INPUT, fg=self.accent_color, bd=0, padx=10, pady=5, cursor="hand2", command=copy_pix)
-        btn_copy.pack(pady=(0, 10))
+        btn_copy.pack(pady=(0, 5))
 
         # Star Github button
         def open_github():

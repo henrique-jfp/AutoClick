@@ -22,6 +22,7 @@ def build():
         "--onefile",
         "--name=AutoClicker",
         "--icon=app_icon.ico" if os.path.exists("app_icon.ico") else "",
+        "--add-data=pix_qrcode.png;." if os.path.exists("pix_qrcode.png") else "",
         "autoclicker.py"
     ]
     
