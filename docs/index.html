@@ -67,10 +67,10 @@
             
             <div class="aspect-video bg-black flex items-center justify-center text-zinc-500 relative overflow-hidden">
                 <!-- Video 1 -->
-                <video id="vid1" src="video1.mp4" muted playsinline class="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 opacity-100 z-20"></video>
+                <video id="vid1" src="video1.mp4" autoplay muted playsinline preload="auto" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 opacity-100 z-20"></video>
                 
                 <!-- Video 2 -->
-                <video id="vid2" src="video2.mp4" muted playsinline class="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 opacity-0 z-20"></video>
+                <video id="vid2" src="video2.mp4" muted playsinline preload="auto" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 opacity-0 z-20"></video>
             </div>
         </div>
     </section>
@@ -81,23 +81,35 @@
         const v2 = document.getElementById('vid2');
         const title = document.getElementById('video-title');
 
-        // Garante que tentem tocar caso o autoplay falhe (navegadores mobile bloqueiam as vezes)
-        v1.play().catch(e => console.log("Aguardando interação para tocar"));
+        // Play video 1 explicitly
+        v1.play().catch(e => console.log("Aguardando interacao", e));
 
         v1.addEventListener('ended', () => {
-            v2.currentTime = 0;
-            v1.classList.replace('opacity-100', 'opacity-0');
-            v2.classList.replace('opacity-0', 'opacity-100');
-            title.innerHTML = "🎮 Na Prática: Farm AFK no Genshin";
-            v2.play();
+            console.log("Video 1 ended, transitioning to Video 2");
+            v1.style.opacity = '0';
+            v1.style.zIndex = '10';
+            
+            v2.style.opacity = '1';
+            v2.style.zIndex = '20';
+            
+            title.innerHTML = "🎯 Na Prática: Farm AFK no Genshin";
+            
+            try { v2.currentTime = 0; } catch(e){}
+            v2.play().catch(e => console.log("Error v2:", e));
         });
 
         v2.addEventListener('ended', () => {
-            v1.currentTime = 0;
-            v2.classList.replace('opacity-100', 'opacity-0');
-            v1.classList.replace('opacity-0', 'opacity-100');
+            console.log("Video 2 ended, transitioning to Video 1");
+            v2.style.opacity = '0';
+            v2.style.zIndex = '10';
+            
+            v1.style.opacity = '1';
+            v1.style.zIndex = '20';
+            
             title.innerHTML = "⚙️ Construtor de Macros";
-            v1.play();
+            
+            try { v1.currentTime = 0; } catch(e){}
+            v1.play().catch(e => console.log("Error v1:", e));
         });
     </script>
 
