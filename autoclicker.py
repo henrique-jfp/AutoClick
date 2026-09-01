@@ -923,29 +923,33 @@ class ModularMacroDialog(tk.Toplevel):
             messagebox.showerror("Erro de Importação", f"Não foi possível carregar o preset: {e}", parent=self)
 
     def _save_preset(self):
-        name = self.var_name.get().strip()
-        if not name:
-            messagebox.showwarning("Aviso", "Digite um nome para o preset!", parent=self)
-            return
+        try:
+            name = self.var_name.get().strip()
+            if not name:
+                messagebox.showwarning("Aviso", "Digite um nome para o preset!", parent=self)
+                return
 
-        if not self.steps:
-            messagebox.showwarning("Aviso", "Adicione pelo menos uma etapa à sua macro!", parent=self)
-            return
+            if not self.steps:
+                messagebox.showwarning("Aviso", "Adicione pelo menos uma etapa à sua macro!", parent=self)
+                return
 
-        preset_data = {
-            "name": name,
-            "target_type": "modular_macro",
-            "target_name": f"Macro ({len(self.steps)} Etapas)",
-            "hotkey_name": self.var_hotkey_name.get().strip().upper() or "F12",
-            "emergency_hotkey_name": self.var_emergency_hotkey.get().strip().upper() or "ESC",
-            "modular_steps": json.loads(json.dumps(self.steps)),
-            "mode": "spam",
-            "interval_ms": 50
-        }
+            preset_data = {
+                "name": name,
+                "target_type": "modular_macro",
+                "target_name": f"Macro ({len(self.steps)} Etapas)",
+                "hotkey_name": self.var_hotkey_name.get().strip().upper() or "F12",
+                "emergency_hotkey_name": self.var_emergency_hotkey.get().strip().upper() or "ESC",
+                "modular_steps": json.loads(json.dumps(self.steps)),
+                "mode": "spam",
+                "interval_ms": 50
+            }
 
-        if self.on_save_callback:
-            self.on_save_callback(preset_data)
-        self.destroy()
+            if self.on_save_callback:
+                self.on_save_callback(preset_data)
+            self.destroy()
+        except Exception as e:
+            import traceback
+            messagebox.showerror("Erro Crítico", f"Erro ao salvar:\n{traceback.format_exc()}", parent=self)
 
 
 class AutoClickerApp:
@@ -1813,6 +1817,15 @@ class AutoClickerApp:
             idx += 1
 
     def _render_quick_preset_buttons(self):
+        # Esconde o card4 (painel de presets) inteiro se nenhum jogo estiver selecionado
+        if getattr(self, "active_game", None) is None:
+            if hasattr(self, "card4"):
+                self.card4.pack_forget()
+            return
+        elif hasattr(self, "card4"):
+            # Garante que o card4 esteja visível se houver jogo selecionado
+            self.card4.pack(fill="x", pady=5)
+
         for widget in self.f_quick_buttons.winfo_children():
             widget.destroy()
         for widget in self.f_preset_actions.winfo_children():
@@ -1877,6 +1890,26 @@ class AutoClickerApp:
         self._render_mini_bar_presets()
 
     def switch_game(self, game_name):
+        if self.active_game == game_name:
+            # Desmarcar o jogo atual e voltar para a tela inicial (modo simples)
+            self.active_game = None
+            self.active_preset_name = ""
+            default_simple = {
+                "name": "",
+                "target_type": "mouse",
+                "target_name": "Esquerdo (Mouse)",
+                "target_mouse_action": "left",
+                "mode": "spam",
+                "interval_ms": 50,
+                "position_mode": "current"
+            }
+            self.apply_preset(default_simple)
+            self._render_game_tabs()
+            self._render_quick_preset_buttons()
+            self._render_mini_bar_presets()
+            self._save_config()
+            return
+
         if game_name in self.game_profiles:
             self.active_game = game_name
             if self.game_profiles[game_name]:
@@ -1922,6 +1955,14 @@ class AutoClickerApp:
             self._save_config()
 
     def open_custom_macro_builder(self):
+        game_to_edit = self.active_game
+        if not game_to_edit:
+            if not self.game_profiles:
+                messagebox.showinfo("Aviso", "Crie uma categoria de jogo primeiro!", parent=self.root)
+                return
+            game_to_edit = list(self.game_profiles.keys())[0]
+            self.switch_game(game_to_edit)
+            
         ModularMacroDialog(self.root, self.active_game, preset_data=None, on_save_callback=self._on_custom_macro_saved)
 
     def edit_preset(self, preset_data):
@@ -1941,18 +1982,26 @@ class AutoClickerApp:
             self._save_config()
 
     def _on_custom_macro_saved(self, preset_data):
-        presets = self.game_profiles[self.active_game]
-        p_name = preset_data.get("name")
-        existing_idx = next((i for i, p in enumerate(presets) if p.get("name") == p_name), -1)
-        if existing_idx >= 0:
-            presets[existing_idx] = preset_data
-        else:
-            presets.append(preset_data)
+        try:
+            if self.active_game not in self.game_profiles:
+                self.game_profiles[self.active_game] = []
+            
+            presets = self.game_profiles[self.active_game]
+            p_name = preset_data.get("name")
+            existing_idx = next((i for i, p in enumerate(presets) if p.get("name") == p_name), -1)
+            if existing_idx >= 0:
+                presets[existing_idx] = preset_data
+            else:
+                presets.append(preset_data)
 
-        self.apply_preset(preset_data)
-        self._render_quick_preset_buttons()
-        self._render_mini_bar_presets()
-        self._save_config()
+            self.apply_preset(preset_data)
+            self._render_quick_preset_buttons()
+            self._render_mini_bar_presets()
+            self._save_config()
+        except Exception as e:
+            import traceback
+            from tkinter import messagebox
+            messagebox.showerror("Erro Crítico", f"Erro ao aplicar preset na tela principal:\n{traceback.format_exc()}")
 
     def apply_preset(self, data):
         self.active_preset_name = data.get("name", "")
